@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find sweep_bot)/launch/cleaner.launch"/>
+    
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/>
+
+    <include file='$(find gazebo_ros)/launch/empty_world.launch'>
+        <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/> -->
+    </include>
+
+    <node name="map_server" pkg="map_server" type="map_server" output="screen" args="/home/sisko/city_map_hukoyu_2.yaml"/>
+
+    <node name="amcl" pkg="amcl" type="amcl" output="screen">
+        <remap from="scan" to="hokuyo_scan"/>
+        <!-- <param name="base_frame_id" value="chasis"/> -->
+        <param name="base_frame_id" value="chasis_footprint"/>
+    </node>
+
+    <node name="move_base" pkg="move_base" type="move_base" output="screen">
+        <rosparam command="load" file="$(find sweep_bot)/config/costmaps/common.yml"/>
+        <rosparam command="load" file="$(find sweep_bot)/config/costmaps/local.yml"/>
+        <rosparam command="load" file="$(find sweep_bot)/config/costmaps/global.yml"/>
+        <remap from="cmd_vel" to="cmd_vel_original"/>
+        
+        <!-- <rosparam command="load" file="$(find sweep_bot)/params/global_costmap_params.yaml"/> -->
+        <!-- <rosparam command="load" file="$(find sweep_bot)/params/local_costmap_params.yaml"/> -->
+    </node>
+
+    <!-- <node name="sweep_movebase" pkg="sweep_movebase" type="server"  output="log" respawn="true" respawn_delay="5"/> -->
+    <!-- <node name="sweep_movebase" pkg="sweep_movebase" type="server"/> -->
+    
+</launch>

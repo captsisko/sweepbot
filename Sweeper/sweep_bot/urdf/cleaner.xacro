@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="SweepBOT">
+
+  <xacro:include filename="$(find sweep_bot)/urdf/sensors/camera.xacro"/>
+  <xacro:include filename="$(find sweep_bot)/urdf/actuators/wheels.xacro"/>
+  <xacro:include filename="$(find sweep_bot)/urdf/sensors/MultiCamera.xacro"/>
+  <xacro:include filename="$(find sweep_bot)/urdf/sensors/laser.xacro"/>
+  <xacro:include filename="$(find hector_sensors_description)/urdf/hokuyo_utm30lx.urdf.xacro"/>
+  
+
+  <!-- body -->
+  <xacro:property name="chasis_length" value="1.0"/>
+  <xacro:property name="chasis_width" value="0.45"/>
+  <xacro:property name="chasis_heigth" value="0.5"/>
+  <xacro:property name="chasis_mass" value="15.0"/>
+  <xacro:property name="ixx" value="${(1/12 * chasis_mass) * ((chasis_width * chasis_width) + (chasis_length * chasis_length))}"/>
+  <xacro:property name="iyy" value="${(1/12 * chasis_mass) * ((chasis_heigth * chasis_heigth) + (chasis_length * chasis_length))}"/>
+  <xacro:property name="izz" value="${(1/12 * chasis_mass) * ((chasis_heigth * chasis_heigth) + (chasis_width * chasis_width))}"/>
+
+
+  <link name="chasis_footprint"/>
+  <joint name="chasis_footprint_joint" type="fixed">
+    <parent link="chasis_footprint"/>
+    <child link="chasis"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </joint> 
+
+  <link name="chasis">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.57 0.0"/>
+      <mass value="${chasis_mass}"/>
+      <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"/>
+    </inertial>
+    <visual name="">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="${chasis_length} ${chasis_width} ${chasis_heigth}"/>
+      </geometry>
+      <material name="">
+        <color rgba="0.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="${chasis_length} ${chasis_width} ${chasis_heigth}"/>
+      </geometry>
+    </collision>
+  </link>
+  <gazebo reference='chasis'>
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <!-- wheels -->
+  <xacro:wheel side="left" position="fore" flip='1' alt='1'/>
+  <xacro:wheel side="right" position="fore" flip='-1' alt='1'/>
+  <xacro:wheel side="left" position="aft" flip='1' alt='-1'/>
+  <xacro:wheel side="right" position="aft" flip='-1' alt='-1'/>
+
+  <!-- HOKUYO as RPLIDAR -->
+  <xacro:hokuyo_utm30lx name="hokuyo_laser" parent="chasis" ros_topic="hokuyo_scan" update_rate="40" ray_count="1040" min_angle="130" max_angle="-130">
+    <origin xyz="0 0 0.3" rpy="0 0 0" />
+  </xacro:hokuyo_utm30lx>
+
+  <!-- MULTI-CAMERA -->
+  <xacro:sweeper_cams/>
+  <!-- <xacro:overwatch_cam/> -->
+  
+  <!-- LASERS -->
+  <!-- <xacro:laser_top/> -->
+  <!-- <xacro:laser_front/> -->
+  <xacro:laser_left/>
+  <!-- <xacro:laser_right/> -->
+  <!-- <xacro:laser_rear/> -->
+
+
+  <!-- SKIP STEERING -->
+  <gazebo>
+    <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+      <updateRate>100.0</updateRate>
+      <robotNamespace>/</robotNamespace>
+      <leftFrontJoint>body_wheel_left_fore_joint</leftFrontJoint>
+      <rightFrontJoint>body_wheel_right_fore_joint</rightFrontJoint>
+      <leftRearJoint>body_wheel_left_aft_joint</leftRearJoint>
+      <rightRearJoint>body_wheel_right_aft_joint</rightRearJoint>
+      <wheelSeparation>0.5</wheelSeparation>
+      <wheelDiameter>0.2</wheelDiameter>
+      <robotBaseFrame>chasis_footprint</robotBaseFrame>
+      <torque>20</torque>
+      <topicName>cmd_vel</topicName>
+      <broadcastTF>true</broadcastTF>
+
+      <commandTopic> cmd_vel </commandTopic>
+      <odometryTopic> odom </odometryTopic>
+      <odometryFrame> odom </odometryFrame>
+      <covariance_x> 0.000100 </covariance_x>
+      <covariance_y> 0.000100 </covariance_y>
+      <covariance_yaw> 0.010000 </covariance_yaw>
+    </plugin>
+  </gazebo>
+  <!--  -->
+
+</robot>

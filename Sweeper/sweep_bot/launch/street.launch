@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- PARAMETERS -->
+    <param name="robot_description" command="$(find xacro)/xacro $(find sweep_bot)/urdf/cleaner.xacro"/>
+
+    <!-- RVIZ -->
+    <node name='robot_state_publisher' pkg='robot_state_publisher' type='robot_state_publisher'/>
+    <node name='joint_state_publisher_gui' pkg='joint_state_publisher_gui' type='joint_state_publisher_gui'/>
+    <node name='rviz' pkg='rviz' type='rviz'/>
+
+    <!-- GAZEBO -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find sweep_bot)/worlds/simple_city.world"/>
+    </include>
+    <!-- <node name='gazebo' pkg='gazebo_ros' type='gazebo'/> -->
+    <node name='sweeper_spawn' pkg='gazebo_ros' type='spawn_model' args='-urdf -model sweeper -param robot_description'/>
+        
+</launch>

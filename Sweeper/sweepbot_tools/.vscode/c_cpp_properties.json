@@ -1,0 +1,36 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/sisko/catkin_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/sisko/catkin_ws/src/geographic_info/geodesy/include/**",
+        "/home/sisko/catkin_ws/src/hector_slam/hector_geotiff/include/**",
+        "/home/sisko/catkin_ws/src/hector_slam/hector_map_tools/include/**",
+        "/home/sisko/catkin_ws/src/hector_slam/hector_mapping/include/**",
+        "/home/sisko/catkin_ws/src/hector_slam/hector_marker_drawing/include/**",
+        "/home/sisko/catkin_ws/src/husky/husky_base/include/**",
+        "/home/sisko/catkin_ws/src/LMS1xx/include/**",
+        "/home/sisko/catkin_ws/src/ouster_example/ouster_client/include/**",
+        "/home/sisko/catkin_ws/src/ouster_example/ouster_gazebo_plugins/include/**",
+        "/home/sisko/catkin_ws/src/ouster_example/ouster_ros/include/**",
+        "/home/sisko/catkin_ws/src/ouster_example/ouster_viz/include/**",
+        "/home/sisko/catkin_ws/src/robot_localization/include/**",
+        "/home/sisko/catkin_ws/src/robot_setup_tf/include/**",
+        "/home/sisko/catkin_ws/src/2wheeled_robot/simple_robot/simple_robot_gazebo/include/**",
+        "/home/sisko/catkin_ws/src/teleop_twist_joy/include/**",
+        "/home/sisko/catkin_ws/src/twist_mux/include/**",
+        "/home/sisko/catkin_ws/src/unique_identifier/unique_id/include/**",
+        "/home/sisko/catkin_ws/src/velodyne_simulator/velodyne_gazebo_plugins/include/**",
+        "/home/sisko/catkin_ws/src/joystick_drivers/wiimote/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

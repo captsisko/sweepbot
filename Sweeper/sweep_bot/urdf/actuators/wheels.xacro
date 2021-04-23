@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_name">
+
+  <!-- WHEELS -->
+  <xacro:property name="wheel_radius" value="0.1"/>
+  <xacro:property name="wheel_length" value="0.1"/>
+  <xacro:property name="wheel_rpy" value="1.57075 0 0"/>
+  <xacro:property name="wheel_mass" value="2.0"/>
+  <xacro:property name="ixx" value="${1/12 * wheel_mass * (wheel_length * wheel_length)}"/>
+  <xacro:property name="izz" value="${1/12 * wheel_mass * (wheel_length * wheel_length)}"/>
+
+  <xacro:macro name="wheel" params="side position flip alt">
+    <xacro:property name="wheel_xyz" value="${alt * 0.3} ${flip * 0.2} -0.25"/>
+
+    <link name="wheel_${side}_${position}">
+      <inertial>
+        <mass value="${wheel_mass}"/>
+        <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="${izz}"/>
+      </inertial>
+      <visual name="">
+        <origin xyz="0 0 0" rpy="${wheel_rpy}"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        </geometry>
+        <material name="">
+          <color rgba="1.0 0.0 0.0 1.0"/>
+          <texture filename=""/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="${wheel_rpy}"/>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <gazebo reference='"wheel_${side}_${position}'>
+      <material>Gazebo/Red</material>
+    </gazebo>
+
+    <joint name="body_wheel_${side}_${position}_joint" type="continuous">
+      <parent link="chasis"/>
+      <child link="wheel_${side}_${position}"/>
+      <limit lower="0.0" upper="0.0" effort="0.0" velocity="0.0"/>
+      <!-- <origin rpy="0 0 0" xyz="-0.133333333333 0 -0.085"/> -->
+      <origin xyz="${alt * 0.3} ${flip * 0.2} -0.25" rpy="0.0 0.0 0.0"/>
+      <axis xyz="0.0 1.0 0.0"/>
+    </joint>
+  </xacro:macro>
+
+</robot>
