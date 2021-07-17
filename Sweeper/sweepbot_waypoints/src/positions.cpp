@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 		marker.colors.push_back(c);
 	}
 
-	ROS_INFO("%s", 'test');
+	// ROS_INFO("%s", 'test');
 
 	waypoint_pub.publish(marker);
 	ros::spin();

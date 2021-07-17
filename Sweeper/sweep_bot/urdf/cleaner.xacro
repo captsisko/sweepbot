@@ -5,9 +5,8 @@
   <xacro:include filename="$(find sweep_bot)/urdf/actuators/wheels.xacro"/>
   <xacro:include filename="$(find sweep_bot)/urdf/sensors/MultiCamera.xacro"/>
   <xacro:include filename="$(find sweep_bot)/urdf/sensors/laser.xacro"/>
-  <xacro:include filename="$(find hector_sensors_description)/urdf/hokuyo_utm30lx.urdf.xacro"/>
+  <!-- <xacro:include filename="$(find hector_sensors_description)/urdf/hokuyo_utm30lx.urdf.xacro"/> -->
   
-
   <!-- body -->
   <xacro:property name="chasis_length" value="1.0"/>
   <xacro:property name="chasis_width" value="0.45"/>
@@ -16,7 +15,6 @@
   <xacro:property name="ixx" value="${(1/12 * chasis_mass) * ((chasis_width * chasis_width) + (chasis_length * chasis_length))}"/>
   <xacro:property name="iyy" value="${(1/12 * chasis_mass) * ((chasis_heigth * chasis_heigth) + (chasis_length * chasis_length))}"/>
   <xacro:property name="izz" value="${(1/12 * chasis_mass) * ((chasis_heigth * chasis_heigth) + (chasis_width * chasis_width))}"/>
-
 
   <link name="chasis_footprint"/>
   <joint name="chasis_footprint_joint" type="fixed">
@@ -58,9 +56,9 @@
   <xacro:wheel side="right" position="aft" flip='-1' alt='-1'/>
 
   <!-- HOKUYO as RPLIDAR -->
-  <xacro:hokuyo_utm30lx name="hokuyo_laser" parent="chasis" ros_topic="hokuyo_scan" update_rate="40" ray_count="1040" min_angle="130" max_angle="-130">
+  <!-- <xacro:hokuyo_utm30lx name="hokuyo_laser" parent="chasis" ros_topic="hokuyo_scan" update_rate="40" ray_count="1040" min_angle="130" max_angle="-130">
     <origin xyz="0 0 0.3" rpy="0 0 0" />
-  </xacro:hokuyo_utm30lx>
+  </xacro:hokuyo_utm30lx> -->
 
   <!-- MULTI-CAMERA -->
   <xacro:sweeper_cams/>
@@ -69,10 +67,9 @@
   <!-- LASERS -->
   <!-- <xacro:laser_top/> -->
   <!-- <xacro:laser_front/> -->
-  <xacro:laser_left/>
+  <!-- <xacro:laser_left/> -->
   <!-- <xacro:laser_right/> -->
   <!-- <xacro:laser_rear/> -->
-
 
   <!-- SKIP STEERING -->
   <gazebo>

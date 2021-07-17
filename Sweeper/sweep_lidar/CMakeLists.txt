@@ -8,7 +8,7 @@ project(sweep_lidar)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  ouster_description
+  # ouster_description
   rospy
 )
 

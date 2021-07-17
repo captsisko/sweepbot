@@ -47,7 +47,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+                    <!-- <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/> -->
                 </geometry>
             </visual>
 
@@ -120,7 +120,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+                    <!-- <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/> -->
                 </geometry>
             </visual>
 
@@ -197,7 +197,10 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+                    <!-- <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/> -->
+                    <!-- <mesh filename="sweep_bot/meshes/hokuyo.dae"/> -->
+                    <mesh filename="package://sweep_bot/meshes/hokuyo.dae"/>
+                    <!-- <mesh filename="$(find sweep_bot)/meshes/hokuyo.dae"/> -->
                 </geometry>
             </visual>
 
@@ -269,7 +272,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+                    <!-- <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/> -->
                 </geometry>
             </visual>
 
@@ -340,7 +343,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/>
+                    <!-- <mesh filename="package://rrbot_description/meshes/hokuyo.dae"/> -->
                 </geometry>
             </visual>
 
