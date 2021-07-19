@@ -51,6 +51,7 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>hector_sensors_description</exec_depend>
+  <exec_depend>ira_laser_tools</exec_depend>
   <build_depend>amcl</build_depend>
   <exec_depend>amcl</exec_depend>
   <build_depend>map_server</build_depend>

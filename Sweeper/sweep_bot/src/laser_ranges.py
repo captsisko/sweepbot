@@ -4,57 +4,36 @@ import rospy
 import math
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-import sys
+from sensor_msgs.msg import LaserScan
+import math
 
-class WallTracker :
+# class LaserRangeTesting :
 
-    data_left = 0
-    cdm_vel_publisher = ''
+def callbackLeft(msg) :
+    print("Left Array lenght ..."),
+    print(len(msg.ranges))
+    print('\t0 degrees: '), 
+    print(msg.ranges[0])
+    print('\t90 degrees: '), 
+    print(msg.ranges[25])
+    print('\t180 degrees: '), 
+    print(msg.ranges[49])
 
-    def __init__(self):
-        rospy.init_node('laser_ranging', anonymous=False)
-        self.cdm_vel_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+def callbackRight(msg) :
+    print("Right Array lenght ..."),
+    print(len(msg.ranges))
+    print('\t0 degrees: '), 
+    print(msg.ranges[0])
+    print('\t90 degrees: '), 
+    print(msg.ranges[25])
+    print('\t180 degrees: '), 
+    print(msg.ranges[49])
 
-        rospy.Subscriber('scan_left', LaserScan, self.sample, 'LEFT')
-        # rospy.Subscriber('scan_right', LaserScan, sample, 'RIGHT')
-        # rospy.Subscriber("cmd_vel_original", Twist, move)
+rospy.init_node('laser_scan_values')
+subL = rospy.Subscriber('/scan_left', LaserScan, callbackLeft)
+subR = rospy.Subscriber('/scan_right', LaserScan, callbackRight)
 
-        # rospy.Subscriber("cmd_vel_original", Twist, self.move)
-        rospy.Subscriber("cmd_vel", Twist, self.move)
+rospy.spin()
 
-        rospy.spin()
-
-    def sample(self, data, SIDE):
-        cleanedData = filter(lambda x: not math.isinf(x), data.ranges)
-        self.data_left = sum(cleanedData)
-
-    def move(self, twist):
-        # global data_left
-        rospy.loginfo('RANGING LEFT : ' + str(self.data_left))
-        rospy.loginfo(twist)
-        new_twist = Twist()
-        # new_twist = twist
-        # rospy.loginfo(new_twist)
-
-        limit = 50
-
-        # Also tried ...
-        # new_twist.linear.x = twist.linear.x
-        # new_twist.linear.y = twist.linear.y
-        # new_twist.linear.z = twist.linear.z
-        # new_twist.angular.x = twist.angular.x
-        # new_twist.angular.y = twist.angular.y
-        # new_twist.angular.z = twist.angular.z
-
-        if(self.data_left > limit):
-            new_twist.angular.z = .5
-            rospy.loginfo('Data-Left['+str(self.data_left)+'] > ' + str(limit) + '--- Setting to 1')
-        else:
-            new_twist.angular.z = 0
-            rospy.loginfo('Data-Left['+str(self.data_left)+'] < ' + str(limit) + '--- Setting to 0')
-        
-        self.cdm_vel_publisher.publish(new_twist)
-
-
-if __name__ == "__main__":
-    WallTracker()
+# if __name__ == "__main__":
+#     LaserRangeTesting()

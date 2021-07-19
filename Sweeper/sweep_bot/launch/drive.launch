@@ -2,8 +2,7 @@
 <launch>
 
     <include file="$(find sweep_bot)/launch/cleaner.launch"/>
-    <!-- <param name="robot_description" command="$(find xacro)/xacro $(find sweep_bot)/urdf/cleaner.xacro"/> -->
-    <!-- <node name='sweep_bot' pkg='gazebo_ros' type='spawn_model' args='-urdf -model sweeper -param robot_description'/> -->
+    <include file="$(find sweep_bot)/launch/scan_merge.launch"/>
     
     <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/>
 
@@ -17,7 +16,7 @@
     <node name="amcl" pkg="amcl" type="amcl" output="screen">
         <remap from="scan" to="hokuyo_scan"/>
         <!-- <param name="base_frame_id" value="chasis"/> -->
-        <param name="base_frame_id" value="chasis_footprint"/>
+        <!-- <param name="base_frame_id" value="chasis_footprint"/> -->
     </node>
 
     <node name="move_base" pkg="move_base" type="move_base" output="screen">
@@ -30,7 +29,6 @@
         <rosparam command="load" file="$(find sweep_bot)/params/local_costmap_params.yaml"/> -->
     </node>
 
-    <!-- <node name="sweep_movebase" pkg="sweep_movebase" type="server"  output="log" respawn="true" respawn_delay="5"/> -->
-    <!-- <node name="sweep_movebase" pkg="sweep_movebase" type="server"/> -->
+    <node pkg="tf" type="static_transform_publisher" name="map_chasis_transform" args="0 0 0 0 0 0 chasis_footprint map 100"/>
     
 </launch>
