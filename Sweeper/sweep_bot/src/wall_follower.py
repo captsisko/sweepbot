@@ -8,33 +8,43 @@ from nav_msgs.msg import Odometry
 from tf import transformations
 from sensor_msgs.msg import LaserScan
 
-# class LaserRangeTesting :
+class Tasker :
+    
+    subL_value = ''
+    subR_value = 0
+    # def __init__(self) :
 
-def callbackLeft(msg) :
-    print("Left Array lenght ..."),
-    print(len(msg.ranges))
-    print('\t0 degrees: '), 
-    print(msg.ranges[0])
-    print('\t90 degrees: '), 
-    print(msg.ranges[25])
-    print('\t180 degrees: '), 
-    print(msg.ranges[49])
+    def callbackLeft(self, msg) :
+        subL_value = min(msg.ranges[0:49])
+        self.set('Left', subL_value)
+        # rospy.loginfo(subL_value)
 
-def callbackRight(msg) :
-    print("Right Array lenght ..."),
-    print(len(msg.ranges))
-    print('\t0 degrees: '), 
-    print(msg.ranges[0])
-    print('\t90 degrees: '), 
-    print(msg.ranges[25])
-    print('\t180 degrees: '), 
-    print(msg.ranges[49])
+    def callbackRight(self, msg) :
+        subR_value = min(msg.ranges[0:49])
+        self.set('Right', subR_value)
+        # rospy.loginfo(subR_value)
 
-rospy.init_node('laser_scan_values')
-subL = rospy.Subscriber('/scan_left', LaserScan, callbackLeft)
-subR = rospy.Subscriber('/scan_right', LaserScan, callbackRight)
+    def set(self, value1, value2) :
+        # rospy.loginfo("%s : %s", value1, value2)
+        # test = math.inf
+        test = float("inf") + 0
+        rospy.loginfo("INF : %s", test),
+        # rospy.loginfo(value2)
 
-rospy.spin()
+    # def run(self) :
+        # rospy.loginfo('\tLeft: '), 
+        # rospy.loginfo(subL_value)
+        # rospy.loginfo('Right: '), 
+        # rospy.loginfo(self.subR_value)
 
-# if __name__ == "__main__":
-#     LaserRangeTesting()
+if __name__ == "__main__":
+    rospy.init_node('wall_detector')
+    tasker = Tasker()
+    rospy.Subscriber('/scan_left', LaserScan, tasker.callbackLeft)
+    rospy.Subscriber('/scan_right', LaserScan, tasker.callbackRight)
+    rate = rospy.Rate(10) # Fixed update frequency of 10hz
+    while not rospy.is_shutdown():
+        # rospy.Subscriber('/scan_right', LaserScan, tasker.callbackRight)
+        # tasker.run()
+        rate.sleep() 
+    # rospy.spin()
