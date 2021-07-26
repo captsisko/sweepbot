@@ -2,13 +2,14 @@
 <launch>
 
     <include file="$(find sweep_bot)/launch/cleaner.launch"/>
-    <include file="$(find sweep_bot)/launch/scan_merge.launch"/>
+    <!-- <include file="$(find sweep_bot)/launch/scan_merge.launch"/> -->
     
     <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/>
 
     <include file='$(find gazebo_ros)/launch/empty_world.launch'>
         <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/> -->
     </include>
+
 
     <!-- <node name="map_server" pkg="map_server" type="map_server" output="screen" args="/home/sisko/city_map_hukoyu_2.yaml"/> -->
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find sweep_bot)/generated_maps/hukoyo_map.yaml"/>
@@ -30,5 +31,7 @@
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="map_chasis_transform" args="0 0 0 0 0 0 chasis_footprint map 100"/>
+    
+    <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
     
 </launch>
