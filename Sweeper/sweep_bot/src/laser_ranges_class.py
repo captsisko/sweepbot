@@ -58,6 +58,18 @@ class LaserRangeTesting :
         if not math.isinf(entry) :
             return True
 
+    def laser_mid_mesurement(self) :
+        combined_array = self.subFR + self.subR
+        count = len(combined_array)
+        mid = len(combined_array)/2
+        # rospy.loginfo(combined_array)
+        # rospy.loginfo( "Count: %s, Mid: %s", count, mid )
+        rospy.loginfo("-----------------------------------------")
+        rospy.loginfo( "INDEX#0: %s", combined_array[0] )
+        rospy.loginfo( "INDEX#%s: %s", mid, combined_array[mid] )
+        rospy.loginfo( "INDEX#73: %s", combined_array[73] )
+        rospy.loginfo("-----------------------------------------")
+
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
     rate = rospy.Rate(10) # Fixed update frequency of 10hz
@@ -74,8 +86,10 @@ if __name__ == "__main__" :
 
     while not rospy.is_shutdown():
         if rangeTester.subR != -1 and rangeTester.subFR != -1 :
-
-            rangeTester.testing()
+            # rangeTester.testing()
             # rangeTester.parallel_testing()
+            rangeTester.laser_mid_mesurement()
+        else :
+            rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subFR)
 
-rate.sleep()
+        rate.sleep()
