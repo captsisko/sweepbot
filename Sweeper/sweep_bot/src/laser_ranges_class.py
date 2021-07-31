@@ -1,31 +1,31 @@
 #!/usr/bin/env python
 
-from pickle import REDUCE
+# from os import replace
 import rospy
-import math
-from sensor_msgs.msg import LaserScan
+import numpy
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 import math
 
 class LaserRangeTesting :
-    subFR = -1
-    subL = -1
-    subR = -1
+    
+    subF = subL = subR = tuple()
+    
     def callbackFront(self, msg) :
         # rospy.logerr("Front Laser Data")
         # rospy.loginfo("[Front Laser]Array size :%s ", len(msg.ranges) )
         # rospy.loginfo("[Front Laser]Minimum value :%s ", min(msg.ranges[0:49]) )
-        self.subFR = msg.ranges[0:24]
+        # self.subFR = msg.ranges[0:24]
+        self.subF = msg.ranges
         # rospy.loginfo( self.subFR )
         # rospy.loginfo(msg.ranges[24:49] )
 
     def callbackLeft(self, msg) :
         # rospy.logerr("Left Laser Data")
         # self.subL = min(msg.ranges[0:49])
-        self.subL = msg.ranges[0:49]
-        rospy.loginfo("[Left Laser]Array size :%s ", len(self.subL) )
-        rospy.loginfo("[Left Laser]Minimum value :%s ", min(self.subL) )
+        self.subL = msg.ranges
+        # rospy.loginfo("[Left Laser]Array size :%s ", len(self.subL) )
+        # rospy.loginfo("[Left Laser]Minimum value :%s ", min(self.subL) )
 
     def callbackRight(self, msg) :
         # rospy.logerr("Right Laser Data")
@@ -46,13 +46,37 @@ class LaserRangeTesting :
         # rospy.loginfo( self.subR )
         # rospy.loginfo('Length: %s', len(combined_array))
 
+    def direction_check(self) :
+        rospy.loginfo("Right Minimum: %s", self.min(self.subR))
+        rospy.loginfo("Front Minimum: %s", self.min(self.subF))
+        rospy.loginfo("Left  Minimum: %s", self.min(self.subL))
+        rospy.loginfo('-----------------------------')
+
     def testing(self) :
-        combined_array = self.subFR + self.subR
-        count = len(combined_array)
-        total = sum( filter( self.reject_inf, combined_array ) )
-        rospy.loginfo('COUNT: %s', count)
-        rospy.loginfo('TOTAL: %s', total)
-        rospy.logwarn('AVERAGE: %s', total/count)
+        self.subR = self.replace_inf(self.subR)
+        rospy.loginfo('-----------------------------')
+        rospy.loginfo("Minimum: %s", min(self.subR))
+        rospy.loginfo("Minimum(c): %s", self.min(self.subR))
+        rospy.loginfo("Maximum: %s", max(self.subR))
+        rospy.loginfo("Mean: %s", numpy.mean(self.subR))
+        rospy.loginfo("Mean Test: %s", numpy.mean(self.subR))
+
+    def min(self, iTuple) :
+        iList = list(iTuple)
+        smallest = 1000000000
+        for index in range(len(iList)) :
+            if iList[index] != 0 :
+                smallest = min( smallest, iList[index] )
+        # rospy.loginfo(iList)
+        return smallest
+
+    def replace_inf(self, iTuple) :
+        iList = list(iTuple)
+        for index in range(len(iList)) :
+            if math.isinf( iList[index] ) :
+                iList.pop(index)
+        rospy.loginfo(iList)
+        return tuple(iList)
 
     def reject_inf(self, entry) :
         if not math.isinf(entry) :
@@ -81,15 +105,16 @@ if __name__ == "__main__" :
     # rospy.loginfo('testing ... testing')
 
     subF = rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
-    # # subL = rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
+    subL = rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
     subR = rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
 
     while not rospy.is_shutdown():
-        if rangeTester.subR != -1 and rangeTester.subFR != -1 :
+        if rangeTester.subR != tuple() and rangeTester.subF != tuple() :
             # rangeTester.testing()
+            rangeTester.direction_check()
             # rangeTester.parallel_testing()
-            rangeTester.laser_mid_mesurement()
+            # rangeTester.laser_mid_mesurement()
         else :
-            rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subFR)
+            rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
 
         rate.sleep()
