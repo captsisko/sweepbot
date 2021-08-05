@@ -56,11 +56,11 @@ class Tasker :
     #     rospy.loginfo(odom.pose.pose)
 
     def direction_check(self) :
-        self.laser_front_data_minimum = min(self.laser_front_data) if len(self.laser_front_data) > 0 else 0
+        # self.laser_front_data_minimum = min(self.laser_front_data) if len(self.laser_front_data) > 0 else 0
         self.laser_right_data_minimum = min(self.laser_right_data) if len(self.laser_right_data) > 0 else 0
         self.laser_left_data_minimum  = min(self.laser_left_data)  if len(self.laser_left_data)  > 0 else 0
         if self.debugMode :
-            rospy.loginfo("Front Data: %s", self.laser_front_data_minimum )
+            # rospy.loginfo("Front Data: %s", self.laser_front_data_minimum )
             rospy.loginfo("Right Data: %s", self.laser_right_data_minimum )
             rospy.loginfo("Left  Data: %s", self.laser_left_data_minimum  )
             rospy.loginfo('-----------------------------')
@@ -85,9 +85,9 @@ class Tasker :
         move = Twist()
         move.linear.x = 0.5
 
-        rospy.loginfo("Checking: %s > %s", self.laser_front_data_minimum, self.sweeper_wall_buffer)
+        rospy.loginfo("Checking: %s > %s", self.laser_right_data_minimum, self.sweeper_wall_buffer)
 
-        if self.laser_front_data_minimum > self.sweeper_wall_buffer :
+        if self.laser_right_data_minimum > self.sweeper_wall_buffer :
             move.angular.z = -0.2
         else :
             self.change_state( self.sweeper_states['TURNLEFT'] )
@@ -97,14 +97,14 @@ class Tasker :
     def turn_left(self) :
         move = Twist()
 
-        rospy.loginfo(self.laser_front_data)
+        # rospy.loginfo(self.laser_right_data)
 
-        rospy.loginfo("Left Turn: %s", min(self.laser_front_data[22:26]))
+        # rospy.loginfo("Left Turn: %s", min(self.laser_right_data[22:26]))
 
-        if min(self.laser_front_data[22:26]) != math.isinf :
-            move.angular.z = 0.1
-        elif min(self.laser_front_data[22:26]) == math.isinf :
-            move.angular.z = 0.0
+        # if min(self.laser_front_data[22:26]) != math.isinf :
+        #     move.angular.z = 0.1
+        # elif min(self.laser_front_data[22:26]) == math.isinf :
+        #     move.angular.z = 0.0
 
         return move
 
@@ -141,14 +141,14 @@ class Tasker :
 
     # checking lasers minimum values are populated and no longer the initial -1
     def lasers_engaged(self) : 
-        if type(self.laser_left_data) == tuple and type(self.laser_right_data) == tuple and type(self.laser_front_data) == tuple :
+        if type(self.laser_left_data) == tuple and type(self.laser_right_data) == tuple : # and type(self.laser_front_data) == tuple :
             if self.debugMode : 
-                rospy.logwarn("laser_front_data: %s,[empty=%s]", min(self.laser_front_data) > 0 if len(self.laser_front_data) else 0, self.laser_front_data==tuple())
+                # rospy.logwarn("laser_front_data: %s,[empty=%s]", min(self.laser_front_data) > 0 if len(self.laser_front_data) else 0, self.laser_front_data==tuple())
                 rospy.logwarn("laser_right_data: %s,[empty=%s]", min(self.laser_right_data) > 0 if len(self.laser_right_data) else 0, self.laser_right_data==tuple())
                 rospy.logwarn("laser_left_data:  %s,[empty=%s]", min(self.laser_left_data)  > 0 if len(self.laser_left_data)  else 0, self.laser_left_data==tuple())
                 rospy.logwarn("-----------------------------------------------")
             return True
-        elif type(self.laser_left_data) == int and type(self.laser_right_data) == int and type(self.laser_front_data) == int :
+        elif type(self.laser_left_data) == int and type(self.laser_right_data) == int : #and type(self.laser_front_data) == int :
             if self.debugMode :
                 rospy.logfatal("NO LASER DATA : Lasers warming up")
             return False
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     if "debug" in str(sys.argv) :
         tasker.debugMode = True
 
-    rospy.Subscriber('/scan_front', LaserScan, tasker.callbackFront)
+    # rospy.Subscriber('/scan_front', LaserScan, tasker.callbackFront)
     rospy.Subscriber('/scan_left',  LaserScan, tasker.callbackLeft)
     rospy.Subscriber('/scan_right', LaserScan, tasker.callbackRight)
 
