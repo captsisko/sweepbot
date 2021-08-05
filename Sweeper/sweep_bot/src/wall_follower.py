@@ -50,7 +50,7 @@ class Tasker :
         self.laser_right_data = filter(self.replace_inf, msg.ranges)
 
     def callbackFront(self, msg) :
-        self.laser_front_data = filter(self.replace_inf, msg.ranges)
+        self.laser_front_data = msg.ranges
 
     # def callbackOdometry(self, odom) :
     #     rospy.loginfo(odom.pose.pose)
@@ -101,9 +101,9 @@ class Tasker :
 
         rospy.loginfo("Left Turn: %s", min(self.laser_front_data[22:26]))
 
-        if min(self.laser_front_data[22:26]) != 0 :
+        if min(self.laser_front_data[22:26]) != math.isinf :
             move.angular.z = 0.1
-        elif min(self.laser_front_data[22:26]) == 0 :
+        elif min(self.laser_front_data[22:26]) == math.isinf :
             move.angular.z = 0.0
 
         return move

@@ -9,6 +9,7 @@
   
   <!-- body -->
   <xacro:property name="chasis_length" value="1.0"/>
+  <!-- <xacro:property name="chasis_width" value="0.45"/> -->
   <xacro:property name="chasis_width" value="0.45"/>
   <xacro:property name="chasis_heigth" value="0.5"/>
   <xacro:property name="chasis_mass" value="15.0"/>
@@ -17,10 +18,32 @@
   <xacro:property name="izz" value="${(1/12 * chasis_mass) * ((chasis_heigth * chasis_heigth) + (chasis_width * chasis_width))}"/>
 
   <link name="chasis_footprint"/>
+  <!-- <link name="chasis_footprint">
+    <inertial>
+      <origin xyz="0.0 0.0 -0.5" rpy="0.0 1.57 0.0"/>
+      <mass value="${chasis_mass}"/>
+      <inertia ixx="${ixx}" ixy="0.0" ixz="0.0" iyy="${iyy}" iyz="0.0" izz="${izz}"/>
+    </inertial>
+    <visual name="">
+      <origin xyz="0.0 0.0 -0.5" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="${chasis_length} ${chasis_width} ${chasis_heigth}"/>
+      </geometry>
+      <material name="">
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 -0.5" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="${chasis_length} ${chasis_width} ${chasis_heigth}"/>
+      </geometry>
+    </collision>
+  </link> -->
+
   <joint name="chasis_footprint_joint" type="fixed">
     <parent link="chasis_footprint"/>
     <child link="chasis"/>
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.0 0.0 0.25" rpy="0.0 0.0 0.0"/>
   </joint> 
 
   <link name="chasis">
@@ -40,9 +63,9 @@
     </visual>
     <collision>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-      <geometry>
+      <!-- <geometry>
         <box size="${chasis_length} ${chasis_width} ${chasis_heigth}"/>
-      </geometry>
+      </geometry> -->
     </collision>
   </link>
   <gazebo reference='chasis'>
@@ -66,9 +89,12 @@
   
   <!-- LASERS -->
   <!-- <xacro:laser_top/> -->
-  <xacro:laser_front/>
-  <xacro:laser_left/>
-  <xacro:laser_right/>
+  <!-- <xacro:laser_front/> -->
+  <!-- <xacro:laser_left/> -->
+  <!-- <xacro:laser_right/> -->
+  <xacro:laser_left_alt/>
+  <xacro:laser_right_alt/>
+  <!-- <xacro:laser_center/> -->
   <!-- <xacro:laser_rear/> -->
 
   <!-- SKIP STEERING -->

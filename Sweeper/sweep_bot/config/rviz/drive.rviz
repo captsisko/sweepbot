@@ -4,7 +4,9 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /LaserScan2
+        - /TF1/Frames1
+        - /Lasers1/LaserScan:HOKUYO1
+        - /Posing1/Pose1
       Splitter Ratio: 0.5
     Tree Height: 799
   - Class: rviz/Selection
@@ -70,19 +72,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        hokuyo_link_front:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         hokuyo_link_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        hokuyo_link_right:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         left_camera:
           Alpha: 1
           Show Axes: false
@@ -131,7 +125,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 0
@@ -148,12 +142,12 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -284,7 +278,7 @@ Visualization Manager:
           Size (Pixels): 3
           Size (m): 0.15000000596046448
           Style: Flat Squares
-          Topic: /hokuyo_scan
+          Topic: /scan_left
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -304,9 +298,9 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: -999999
+          Max Intensity: 0
           Min Color: 0; 0; 0
-          Min Intensity: 999999
+          Min Intensity: 0
           Name: LaserScan:Left
           Position Transformer: XYZ
           Queue Size: 10
@@ -334,9 +328,9 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 0
+          Max Intensity: -999999
           Min Color: 0; 0; 0
-          Min Intensity: 0
+          Min Intensity: 999999
           Name: LaserScan:Right
           Position Transformer: XYZ
           Queue Size: 10
@@ -418,7 +412,7 @@ Visualization Manager:
           Unreliable: false
           Use Timestamp: false
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Maps
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -444,8 +438,8 @@ Visualization Manager:
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.5
-      Style: Boxes
-      Topic: /scan_front_right
+      Style: Points
+      Topic: /scans
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -478,25 +472,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 20.650634765625
+      Distance: 1.840134620666504
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.41970375180244446
-        Y: -1.832500696182251
-        Z: -1.7497106790542603
+        X: 0.466942697763443
+        Y: 0.8871902823448181
+        Z: 0.20351135730743408
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7197971343994141
+      Pitch: 0.8397970199584961
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.2932066917419434
+      Yaw: 1.918259620666504
     Saved: ~
 Window Geometry:
   Displays:

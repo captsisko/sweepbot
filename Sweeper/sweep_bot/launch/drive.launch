@@ -3,6 +3,7 @@
 
     <include file="$(find sweep_bot)/launch/cleaner.launch"/>
     <!-- <include file="$(find sweep_bot)/launch/scan_merge.launch"/> -->
+    <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
     
     <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/>
 
@@ -31,7 +32,5 @@
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="map_chasis_transform" args="0 0 0 0 0 0 chasis_footprint map 100"/>
-    
-    <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
-    
+        
 </launch>
