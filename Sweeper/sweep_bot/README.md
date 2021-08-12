@@ -19,3 +19,16 @@ Execute `roslaunch sweep_bot merge_laser_scans.launch`
 
 Execute `sweep_bot wall_follower.py`
 
+## Illustrations
+
+In the lighter simulation environment described above, an obstacle is required for the robot to detect. The following shows the robot deployed in such an environment with walls manually placed on the right to experiment with.
+
+![Screenshot 2021-08-10 00:01:02](https://user-images.githubusercontent.com/3543536/129274102-6451b841-cfa1-4b9f-adee-7902732b9d76.png)
+
+It also shows the full laserscan coverage of the robot.
+
+![Screenshot 2021-08-12 22:51:36](https://user-images.githubusercontent.com/3543536/129274918-47f205c2-9a76-4e89-afd6-c3e7e0a9351c.png)
+Configured left-side laser coverage
+
+![Screenshot 2021-08-12 22:56:16](https://user-images.githubusercontent.com/3543536/129275209-25809207-e66a-40f2-905c-712b668a343d.png)
+Configured right-side laser coverage
