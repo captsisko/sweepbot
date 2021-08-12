@@ -3,9 +3,9 @@
 # from os import replace
 import sys
 import rospy
-import numpy
+import numpy as np
 from geometry_msgs.msg import Twist
-from rospy.core import rospyinfo
+from rospy.core import loginfo, rospyinfo
 from sensor_msgs.msg import LaserScan
 import math
 from nav_msgs.msg import Odometry
@@ -14,7 +14,8 @@ from geometry_msgs.msg import Twist
 
 class LaserRangeTesting :
     
-    subF = subL = subR = scans = tuple()
+    subF = subL = subR = scans = scan_fore = scan_left = scan_rear = scan_right = tuple()
+    regions = {}
     target_acquired = False
     orientation = list()
     target = 0 # degrees to be applied to yaw
@@ -45,7 +46,37 @@ class LaserRangeTesting :
         # rospy.loginfo("[Right Laser]Minimum value :%s ", min(self.subR) )
 
     def callbackScans(self, msg) :
-        self.subF = msg.ranges
+        self.scans = msg.ranges
+        # for index in range(0, 135, 135) :
+        # self.scan_fore = range(0, 135, 135)
+        # self.regions = {
+        #     'starboard_aft' : self.scans[0:135],
+        #     'starboard_abeam_aft' : self.scans[136:271],
+        #     'starboard_abeam_bow' : self.scans[272:407],
+        #     'starboard_bow' : self.scans[408:543],
+        #     'port_aft' : self.scans[949:1084],
+        #     'port_abeam_aft' : self.scans[814:949],
+        #     'port_abeam_bow' : self.scans[679:814],
+        #     'port_bow' : self.scans[544:679],
+        # }
+        self.regions = {
+            # 'starboard' : {
+            #     'bow'   : {
+            #     }
+            # },
+            # 'test' : {
+            #     np.arange(3, 30)
+            # },
+            'starboard_aft' : self.scans[0:135],
+            'starboard_abeam_aft' : self.scans[136:271],
+            'starboard_abeam_bow' : self.scans[272:407],
+            'starboard_bow' : self.scans[408:543],
+            'port_aft' : self.scans[949:1084],
+            'port_abeam_aft' : self.scans[814:949],
+            'port_abeam_bow' : self.scans[679:814],
+            'port_bow' : self.scans[544:679],
+        }
+        # rospy.loginfo('TESTING: %s', self.regions['test'][7])
 
     def callbackOdom(self, odom) :
         orientation = odom.pose.pose.orientation
@@ -124,8 +155,9 @@ class LaserRangeTesting :
             # target = (self.target + 90) * math.pi/180 # converting degrees into radians
             if format(target, '.2f') == format(self.yaw, '.2f') :
                 command.angular.z = 0
-                rospy.logerr('Target Acuired!')
+                rospy.logerr('Target Aqcuired!')
                 self.target_acquired = True
+                exit()
             else :
                 command.angular.z = self.kP * (target - self.yaw)
                 rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
@@ -138,6 +170,51 @@ class LaserRangeTesting :
 
     def printData(self) :
         rospy.loginfo(self.subF)
+
+    def indexTester(self, start, end) :
+        rospy.loginfo("Start: %s, End: %s", start, end)
+        rospy.loginfo("------------------ Initiating Check -----------------------")
+        for index in range(start, end) :
+            rospy.loginfo("=> index#%s: %s", index, self.scans[index])
+        exit()
+
+    def angles(self, section) :
+        if section == 'all' : 
+            rospy.loginfo(self.regions)
+        else :
+            rospy.loginfo(self.regions[section])
+        exit()
+
+    def clear_inf_values(self, set) :
+        return tuple( item for item in set if item != 26.0 )
+
+    def averaging(self, set) :
+        count = len(set)
+        # clean_set = set
+        clean_set = self.clear_inf_values(set)
+        total = 0
+        for i in clean_set :
+            total += i
+        rospy.loginfo('COUNT: %s', count)
+        rospy.loginfo('TOTAL: %s', total)
+        rospy.loginfo('AVERAGE: %s', total/count)
+        rospy.loginfo('To Degrees: %s', math.cos(total/count))
+
+    def distance(self, section) :
+        if section == 'bow' :
+            rospy.loginfo( len( self.regions['starboard_bow'] ) )
+            rospy.loginfo( len( self.clear_inf_values(self.regions['starboard_bow']) ) )
+            self.averaging(self.regions['starboard_bow'] + self.regions['port_bow'])
+        # elif section == 'port' :
+        #     return 
+        # elif section == 'abeam_starboard' :
+        #     return 
+        # elif section == 'abeam_port' :
+        #     return 
+        # rospy.loginfo(self.regions[section])
+        else :
+            rospy.loginfo('Something went wrong!')
+        # exit()
 
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
@@ -157,6 +234,30 @@ if __name__ == "__main__" :
     printData = False
     if "print" in str(sys.argv) :
         printData = True
+    start = 0
+    end = 0
+    if "range=" in str(sys.argv) :
+        range_args = sys.argv[1]
+        data = range_args.split('=')[1]
+        data_args = data.split(',')
+        start = int(data_args[0])
+        end = int(data_args[1])
+
+    angles = False
+    section = ''
+    if "angles=" in str(sys.argv) :
+        section_args = sys.argv[1]
+        section = section_args.split('=')[1]
+        rospy.loginfo('CHECKING : %s', section)
+        angles = True
+
+    distance = False
+    direction = ''
+    if "distance=" in str(sys.argv) :
+        direction_args = sys.argv[1]
+        direction = direction_args.split('=')[1]
+        rospy.loginfo('CHECKING DIRECTION : %s', direction)
+        distance = True
 
     rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
     rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
@@ -169,7 +270,7 @@ if __name__ == "__main__" :
 
     while not rospy.is_shutdown():
         # if rangeTester.subR != tuple() and rangeTester.subF != tuple() :
-        if rangeTester.subF != tuple() :
+        if rangeTester.scans != tuple() :
             # rangeTester.testing()
             # rangeTester.direction_check()
             # rangeTester.parallel_testing()
@@ -180,6 +281,12 @@ if __name__ == "__main__" :
                 rangeTester.printData()
             if target :
                 rangeTester.quaternions_to_euler_angles()
+            # if range :
+            #     rangeTester.indexTester(start, end)
+            if angles :
+                rangeTester.angles(section)
+            if distance :
+                rangeTester.distance(direction)
         else :
             rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
 

@@ -7,10 +7,10 @@
         <param name="scan_destination_topic" value="/scans"/>
         <param name="laserscan_topics" value ="/scan_left /scan_right" />
         
-        <!-- <param name="angle_min" value="-6.28"/>
+        <param name="angle_min" value="-6.28"/>
         <param name="angle_max" value="6.28"/>
 
-        <param name="angle_increment" value="0.0058"/>
+        <!-- <param name="angle_increment" value="0.0058"/>
         <param name="scan_time" value="0.0"/>
         <param name="range_min" value="0.10"/>
         <param name="range_max" value="3.0"/> -->

@@ -3,7 +3,7 @@
 # from pickle import TRUE
 # from yaml import serialize
 import rospy
-from rospy.core import loginfo
+# from rospy.core import loginfo
 import math
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
@@ -14,24 +14,29 @@ from sensor_msgs.msg import LaserScan
 import sys
 import numpy
 # from math import isclose
+from tf.transformations import euler_from_quaternion
+from visualization_msgs.msg import Marker
 
 class Tasker :
 
     def __init__(self) :
-        # rospy.Subscriber('/scan_front', LaserScan, self.callbackFront)
-        # rospy.Subscriber('/scan_left', LaserScan, self.callbackLeft)
-        # rospy.Subscriber('/scan_right', LaserScan, self.callbackRight)
-
         rospy.loginfo('Initializing ...')
+        self.regions = {}
         self.sweeper_wall_buffer = 0.5
         self.current_state = -1
         self.sweeper_state = -1
-        self.laser_left_data_minimum  = 0
-        self.laser_right_data_minimum = 0
-        self.laser_front_data_minimum = 0
-        self.laser_front_data = 0
-        self.laser_left_data  = 0
-        self.laser_right_data = 0
+        # self.laser_left_data_minimum  = 0
+        # self.laser_right_data_minimum = 0
+        # self.laser_front_data_minimum = 0
+        self.scans_minimum_left = 0
+        self.scans_minimum_right = 0
+        self.scans_minimum_fore = 0
+        self.scans_minimum_rear = 0
+        # self.laser_front_data = 0
+        # self.laser_left_data  = 0
+        # self.laser_right_data = 0
+        self.scans = 0
+        self.scans_fore = []
         # self.lasers_frontleft_merge = tuple()
         # self.lasers_frontright_merge = tuple()
         self.sweeper_states = {
@@ -42,6 +47,10 @@ class Tasker :
         }
         self.sweeper_move = Twist()
         self.debugMode = False
+        self.median = -1000
+
+        self.target = 0 # degrees to be applied to yaw
+        self.kP = 0.5
 
     def callbackLeft(self, msg) :
         self.laser_left_data = filter(self.replace_inf, msg.ranges)
@@ -52,45 +61,136 @@ class Tasker :
     def callbackFront(self, msg) :
         self.laser_front_data = msg.ranges
 
-    # def callbackOdometry(self, odom) :
-    #     rospy.loginfo(odom.pose.pose)
+    def callbackScans(self, msg) :
+        self.scans = msg.ranges
+        # self.regions = {
+        #     'starboard_aft' : self.scans[0:135],
+        #     'starboard_abeam_aft' : self.scans[136:271],
+        #     'starboard_abeam_bow' : self.scans[272:407],
+        #     'starboard_bow' : self.scans[408:543],
+        #     'port_aft' : self.scans[949:1084],
+        #     'port_abeam_aft' : self.scans[814:949],
+        #     'port_abeam_bow' : self.scans[679:814],
+        #     'port_bow' : self.scans[544:679],
+        # }
+
+        self.regions = {
+            'starboard' : {
+                'abeam'   : {
+
+                },
+            },
+            'starboard_aft' : self.scans[0:135],
+            'starboard_abeam_aft' : self.scans[136:271],
+            'starboard_abeam_bow' : self.scans[272:407],
+            'starboard_bow' : self.scans[408:543],
+            'port_aft' : self.scans[949:1084],
+            'port_abeam_aft' : self.scans[814:949],
+            'port_abeam_bow' : self.scans[679:814],
+            'port_bow' : self.scans[544:679],
+        }
+
+    def callbackOdometry(self, odom) :
+        # rospy.loginfo(odom.pose.pose)
+        orientation = odom.pose.pose.orientation
+        self.orientation = [orientation.x, orientation.y, orientation.z, orientation.w]
+        (roll, pitch, yaw) = euler_from_quaternion(self.orientation)
+        # rospy.logerr(yaw) # this yaw value is in radians NOT DEGREES with respect to the world coordinates
+        self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
+        yaw_degrees = (yaw) * math.pi/180
 
     def direction_check(self) :
-        # self.laser_front_data_minimum = min(self.laser_front_data) if len(self.laser_front_data) > 0 else 0
-        self.laser_right_data_minimum = min(self.laser_right_data) if len(self.laser_right_data) > 0 else 0
-        self.laser_left_data_minimum  = min(self.laser_left_data)  if len(self.laser_left_data)  > 0 else 0
-        if self.debugMode :
-            # rospy.loginfo("Front Data: %s", self.laser_front_data_minimum )
-            rospy.loginfo("Right Data: %s", self.laser_right_data_minimum )
-            rospy.loginfo("Left  Data: %s", self.laser_left_data_minimum  )
-            rospy.loginfo('-----------------------------')
-    
-    # def min(self, iTuple) :
-    #     # rospy.loginfo(iTuple)
-    #     iList = list(iTuple)
-    #     smallest = False
-    #     for index in range(len(iList)) :
-    #         if iList[index] != 0 :
-    #             smallest = min( smallest, iList[index] )
-    #     # rospy.loginfo(iList)
-    #     return smallest
+        # port_aft = min(self.regions['port_abeam_aft'])
+        # port_bow = min(self.regions['port_abeam_bow'])
+        # rospy.loginfo("PORT-Aft-min: %s ", port_aft)
+        # rospy.loginfo("PORT-Bow-min: %s ", port_bow)
+        # rospy.loginfo("PORT-Min: %s ", min(port_aft, port_bow))
 
-    def replace_inf(self, item) :
-        if math.isinf( item ) :
-            return False
-        else :
-            return True
+        # starboard_aft = min(self.regions['starboard_abeam_aft'])
+        # starboard_bow = min(self.regions['starboard_abeam_bow'])
+        # rospy.loginfo("STarbord-Aft-min: %s ", starboard_aft)
+        # rospy.loginfo("STarbord-Bow-min: %s ", starboard_bow)
+        # rospy.loginfo("STarbord-Min: %s ", min(starboard_aft, starboard_bow))
+
+        self.sweeper_state = self.sweeper_states['LOCATE-RIGHT-WALL']
+        # rospy.loginfo('-----------------------------')
+        
+        # self.scans_minimum  = min(self.scans)  if len(self.scans)  > 0 else 0
+        # if self.debugMode :
+        #     rospy.loginfo("Left  Data: %s", self.scans_minimum  )
+        #     rospy.loginfo('-----------------------------')
+        # exit()
+    
+    # Get rid of values outside the range of the lasers.
+    # In this case, the values of 26.0 exceeds the 25.0 
+    # laser limits and compromise the algorithm
+    def clear_inf_values(self, set) :
+        return tuple( item for item in set if item != 26.0 )
+
+    def getMedian(self, range) :
+        # rospy.loginfo("SIZE: %s", len(self.scans))
+        # return tuple( item for item in set if item != 26.0 )
+        median = numpy.median( self.scans[range[0]:range[1]] )
+        rospy.loginfo( "MEDIAN INDEX: %s", self.scans.index(median) )
+        # if numpy.median(range) :
+        #     return numpy.median(range)
+        return self.scans.index(median)
+
+    def getMin(self, tuple1, tuple2) :
+        value1 = min( self.clear_inf_values(tuple1) )
+        value2 = min( self.clear_inf_values(tuple2) )
+        return min(value1, value2)
+
+    def getMax(self, tuple1, tuple2) :
+        value1 = max( self.clear_inf_values(tuple1) )
+        value2 = max( self.clear_inf_values(tuple2) )
+        return max(value1, value2)
 
     def locate_right_wall(self) :
         move = Twist()
-        move.linear.x = 0.5
+        # move.linear.x = 0.5
 
-        rospy.loginfo("Checking: %s > %s", self.laser_right_data_minimum, self.sweeper_wall_buffer)
-
-        if self.laser_right_data_minimum > self.sweeper_wall_buffer :
-            move.angular.z = -0.2
+        if self.median == -1000 :
+            self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
         else :
-            self.change_state( self.sweeper_states['TURNLEFT'] )
+            rospy.loginfo( "Median: %s", self.median )
+        
+            # heading = -3.14159274101 + (self.median * 0.00579999992624)
+            heading = 0
+            # for i in range(self.median) :
+            for i in range(90) :
+                heading += -3.14159274101 + (i * 0.00579999992624)
+                # heading += -3.14 + (i * 0.005)
+            # heading = -3.14 + (200 * 0.005)
+
+            # ray_angle = angle_min + (i * angle_increment)
+            # heading_error = math.acos( self.scans[self.median] )
+            # rospy.loginfo('Heading-Error: %s', heading_error)
+
+            # ***************************************************************************************
+
+            rospy.loginfo("HEADING: %s", heading)
+            
+            # # target = heading * math.pi/180 # converting degrees into radians
+            target = math.radians(heading)
+            rospy.loginfo("TARGET: %s", target)
+            # if format(target, '.2f') == format(self.yaw, '.2f') :
+            #     move.angular.z = 0
+            #     rospy.logerr('Target Aqcuired!')
+            #     self.target_acquired = True
+            #     exit()
+            # else :
+            #     move.angular.z = self.kP * (target - self.yaw)
+            #     rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
+
+            # ***************************************************************************************
+
+            # if maxi > self.sweeper_wall_buffer :
+            #     move.angular.z = -0.2
+            # else :
+            #     move.linear.x = 0
+            #     move.angular.z = 0
+            #     # self.change_state( self.sweeper_states['TURNLEFT'] )
         
         return move
 
@@ -99,7 +199,8 @@ class Tasker :
 
         # rospy.loginfo(self.laser_right_data)
 
-        # rospy.loginfo("Left Turn: %s", min(self.laser_right_data[22:26]))
+        mini = min(min(self.regions['starboard_bow']), min(self.regions['port_bow']))
+        rospy.loginfo("Left Turn: %s", mini)
 
         # if min(self.laser_front_data[22:26]) != math.isinf :
         #     move.angular.z = 0.1
@@ -107,10 +208,6 @@ class Tasker :
         #     move.angular.z = 0.0
 
         return move
-
-    # def reject_inf(self, entry) :
-    #     if not math.isinf(entry) :
-    #         return True
 
     def follow_kerb(self) :
         move = Twist()
@@ -141,14 +238,12 @@ class Tasker :
 
     # checking lasers minimum values are populated and no longer the initial -1
     def lasers_engaged(self) : 
-        if type(self.laser_left_data) == tuple and type(self.laser_right_data) == tuple : # and type(self.laser_front_data) == tuple :
+        if type(self.scans) == tuple : #and type(self.laser_right_data) == tuple : # and type(self.laser_front_data) == tuple :
             if self.debugMode : 
-                # rospy.logwarn("laser_front_data: %s,[empty=%s]", min(self.laser_front_data) > 0 if len(self.laser_front_data) else 0, self.laser_front_data==tuple())
-                rospy.logwarn("laser_right_data: %s,[empty=%s]", min(self.laser_right_data) > 0 if len(self.laser_right_data) else 0, self.laser_right_data==tuple())
-                rospy.logwarn("laser_left_data:  %s,[empty=%s]", min(self.laser_left_data)  > 0 if len(self.laser_left_data)  else 0, self.laser_left_data==tuple())
+                rospy.logwarn("scans:  %s,[empty=%s]", min(self.scans)  > 0 if len(self.scans)  else 0, self.scans==tuple())
                 rospy.logwarn("-----------------------------------------------")
             return True
-        elif type(self.laser_left_data) == int and type(self.laser_right_data) == int : #and type(self.laser_front_data) == int :
+        elif type(self.scans) == int : #and type(self.laser_right_data) == int : #and type(self.laser_front_data) == int :
             if self.debugMode :
                 rospy.logfatal("NO LASER DATA : Lasers warming up")
             return False
@@ -168,9 +263,8 @@ if __name__ == "__main__":
     if "debug" in str(sys.argv) :
         tasker.debugMode = True
 
-    # rospy.Subscriber('/scan_front', LaserScan, tasker.callbackFront)
-    rospy.Subscriber('/scan_left',  LaserScan, tasker.callbackLeft)
-    rospy.Subscriber('/scan_right', LaserScan, tasker.callbackRight)
+    rospy.Subscriber('/scans', LaserScan, tasker.callbackScans)
+    rospy.Subscriber('/odom', Odometry, tasker.callbackOdometry)
 
     while not rospy.is_shutdown() :
         if tasker.lasers_engaged() :
