@@ -37,6 +37,6 @@ Configured right-side laser coverage
 As previously mentioned, the **laser_ranges_class.py** script, though poorly named, has evolved into the primary test script with it's code tested and copied into wall_follower.py.
 Below is a recording of using this test script to orient the robot to a desired angle.
 
-https://user-images.githubusercontent.com/3543536/129280187-6b4676db-645f-4929-bd3f-78996e05ef64.mp4
+https://user-images.githubusercontent.com/3543536/129284802-5163f635-9c84-4db9-bc42-5d20af02a0e7.mp4
 
 Arguments in **target=** mode are 0, 90, -90 and 180.
