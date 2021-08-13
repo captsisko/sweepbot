@@ -152,38 +152,43 @@ class Tasker :
 
         if self.median == -1000 :
             self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
+            # exit()
         else :
             rospy.loginfo( "Median: %s", self.median )
         
             # heading = -3.14159274101 + (self.median * 0.00579999992624)
             heading = 0
             # for i in range(self.median) :
-            for i in range(90) :
-                heading += -3.14159274101 + (i * 0.00579999992624)
+            #     heading += -3.14159274101 + (i * 0.00579999992624)
                 # heading += -3.14 + (i * 0.005)
             # heading = -3.14 + (200 * 0.005)
-
-            # ray_angle = angle_min + (i * angle_increment)
-            # heading_error = math.acos( self.scans[self.median] )
-            # rospy.loginfo('Heading-Error: %s', heading_error)
+            # heading = -3.14 + (self.median * 0.005)
+            heading = -3.14159274101 + (self.median * 0.00579999992624)
+            # heading = -3.14159274101
+            # heading = 0
+            # heading = self.median * 0.00579999992624
 
             # ***************************************************************************************
 
             rospy.loginfo("HEADING: %s", heading)
             
             # # target = heading * math.pi/180 # converting degrees into radians
-            target = math.radians(heading)
+            # target = math.radians(heading)
+            target = heading
             rospy.loginfo("TARGET: %s", target)
-            # if format(target, '.2f') == format(self.yaw, '.2f') :
-            #     move.angular.z = 0
-            #     rospy.logerr('Target Aqcuired!')
-            #     self.target_acquired = True
-            #     exit()
-            # else :
-            #     move.angular.z = self.kP * (target - self.yaw)
-            #     rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
+            if format(target, '.2f') == format(self.yaw, '.2f') :
+                move.angular.z = 0
+                rospy.logerr('Target Aqcuired!')
+                self.target_acquired = True
+                exit()
+            else :
+                move.angular.z = self.kP * (target - self.yaw)
+                rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
 
             # ***************************************************************************************
+
+            # return move
+
 
             # if maxi > self.sweeper_wall_buffer :
             #     move.angular.z = -0.2

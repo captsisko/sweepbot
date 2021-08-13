@@ -153,7 +153,7 @@ class LaserRangeTesting :
             command = Twist()
             target = self.target * math.pi/180 # converting degrees into radians
             # target = (self.target + 90) * math.pi/180 # converting degrees into radians
-            if format(target, '.2f') == format(self.yaw, '.2f') :
+            if format(target, '.1f') == format(self.yaw, '.1f') :
                 command.angular.z = 0
                 rospy.logerr('Target Aqcuired!')
                 self.target_acquired = True
