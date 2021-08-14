@@ -42,8 +42,9 @@ class Tasker :
         self.sweeper_states = {
             # 'PARK' : 0,
             'LOCATE-RIGHT-WALL' : 1,
+            'FOLLOWKERB' : 3,
             'TURNLEFT' : 2,
-            'FOLLOWKERB' : 3
+            'DRIVE' : 4,
         }
         self.sweeper_move = Twist()
         self.debugMode = False
@@ -99,27 +100,9 @@ class Tasker :
         self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         yaw_degrees = (yaw) * math.pi/180
 
-    def direction_check(self) :
-        # port_aft = min(self.regions['port_abeam_aft'])
-        # port_bow = min(self.regions['port_abeam_bow'])
-        # rospy.loginfo("PORT-Aft-min: %s ", port_aft)
-        # rospy.loginfo("PORT-Bow-min: %s ", port_bow)
-        # rospy.loginfo("PORT-Min: %s ", min(port_aft, port_bow))
-
-        # starboard_aft = min(self.regions['starboard_abeam_aft'])
-        # starboard_bow = min(self.regions['starboard_abeam_bow'])
-        # rospy.loginfo("STarbord-Aft-min: %s ", starboard_aft)
-        # rospy.loginfo("STarbord-Bow-min: %s ", starboard_bow)
-        # rospy.loginfo("STarbord-Min: %s ", min(starboard_aft, starboard_bow))
-
-        self.sweeper_state = self.sweeper_states['LOCATE-RIGHT-WALL']
-        # rospy.loginfo('-----------------------------')
-        
-        # self.scans_minimum  = min(self.scans)  if len(self.scans)  > 0 else 0
-        # if self.debugMode :
-        #     rospy.loginfo("Left  Data: %s", self.scans_minimum  )
-        #     rospy.loginfo('-----------------------------')
-        # exit()
+    # def direction_check(self) :
+    #     # self.sweeper_state = self.sweeper_states['LOCATE-RIGHT-WALL']
+    #     self.change_state( self.sweeper_states['LOCATE-RIGHT-WALL'] )
     
     # Get rid of values outside the range of the lasers.
     # In this case, the values of 26.0 exceeds the 25.0 
@@ -127,14 +110,38 @@ class Tasker :
     def clear_inf_values(self, set) :
         return tuple( item for item in set if item != 26.0 )
 
+    def clean_set(self, set) :
+        set_list = list(set)
+        occurances = set_list.count(26.0)
+        print('Occurances: %d' %(occurances))
+        while set_list.count(26.0) :
+            set_list.remove(26.0)
+        return tuple(set_list)
+
     def getMedian(self, range) :
-        # rospy.loginfo("SIZE: %s", len(self.scans))
-        # return tuple( item for item in set if item != 26.0 )
-        median = numpy.median( self.scans[range[0]:range[1]] )
-        rospy.loginfo( "MEDIAN INDEX: %s", self.scans.index(median) )
-        # if numpy.median(range) :
-        #     return numpy.median(range)
-        return self.scans.index(median)
+        # median = numpy.median( range[0]:range[1] )
+        indexes = numpy.arange(range[0], range[1]+1)
+        # rospy.loginfo(indexes)
+        indexes_length = len(indexes)
+        indexes_midpoint = indexes_length / 2
+        while self.scans[indexes_midpoint] == 26.0 :
+            indexes_midpoint -= 1
+        # rospy.loginfo("LENGTH: %s", indexes_length)
+        # rospy.loginfo("MID INDEX: %s", indexes_length/2)
+        # min_index_value = self.scans[indexes_length/2]
+        # rospy.loginfo("MID VALUE: %s", min_index_value)
+        return indexes_midpoint
+        # **********************************************************
+        # median = numpy.median( self.clear_inf_values(self.scans[range[0]:range[1]]) )
+        # rospy.loginfo( "MEDIAN INDEX: %s", median )
+        # rospy.loginfo( "MEDIAN VALUE: %s", self.scans.index(median) )
+        # return self.scans.index(median)
+
+    def getAverage(self, range) :
+        range_list = self.clean_set( list( self.scans[range[0] : range[1]] ) )
+        range_average = numpy.average(range_list)
+        rospy.loginfo("Average: %s", range_average)
+        return range_average
 
     def getMin(self, tuple1, tuple2) :
         value1 = min( self.clear_inf_values(tuple1) )
@@ -148,64 +155,56 @@ class Tasker :
 
     def locate_right_wall(self) :
         move = Twist()
-        # move.linear.x = 0.5
 
         if self.median == -1000 :
             self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
-            # exit()
         else :
             rospy.loginfo( "Median: %s", self.median )
-        
-            # heading = -3.14159274101 + (self.median * 0.00579999992624)
-            heading = 0
-            # for i in range(self.median) :
-            #     heading += -3.14159274101 + (i * 0.00579999992624)
-                # heading += -3.14 + (i * 0.005)
-            # heading = -3.14 + (200 * 0.005)
-            # heading = -3.14 + (self.median * 0.005)
-            heading = -3.14159274101 + (self.median * 0.00579999992624)
-            # heading = -3.14159274101
-            # heading = 0
-            # heading = self.median * 0.00579999992624
+            target = -3.14159274101 + (self.median * 0.00579999992624)
+            rospy.loginfo("Moving to %s degrees", math.degrees(target))
 
-            # ***************************************************************************************
-
-            rospy.loginfo("HEADING: %s", heading)
-            
-            # # target = heading * math.pi/180 # converting degrees into radians
-            # target = math.radians(heading)
-            target = heading
-            rospy.loginfo("TARGET: %s", target)
             if format(target, '.2f') == format(self.yaw, '.2f') :
                 move.angular.z = 0
                 rospy.logerr('Target Aqcuired!')
                 self.target_acquired = True
-                exit()
+                # exit()
+                # self.sweeper_state = self.sweeper_states['TURNLEFT']
+                self.change_state( self.sweeper_states['DRIVE'] )
             else :
                 move.angular.z = self.kP * (target - self.yaw)
                 rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
 
-            # ***************************************************************************************
+        return move
 
-            # return move
+    def drive(self) :
+        move = Twist()
+        # 'starboard_bow' : self.scans[408:543],
+        # 'port_abeam_bow' : self.scans[679:814],
+         
+        # self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
+        # rospy.loginfo(self.scans[408:814])
+        midpoint = self.getMedian([408/3, 814/3])
+        rospy.loginfo('[DRIVE]midpoint: %s with value: %s', midpoint, self.scans[midpoint])
 
+        range = self.getAverage([408, 814])
 
-            # if maxi > self.sweeper_wall_buffer :
-            #     move.angular.z = -0.2
-            # else :
-            #     move.linear.x = 0
-            #     move.angular.z = 0
-            #     # self.change_state( self.sweeper_states['TURNLEFT'] )
-        
+        if( range <= 0.5 ) :
+            self.change_state( self.sweeper_states['TURNLEFT'] )
+        else :
+            move.linear.x = 0.5
+
         return move
 
     def turn_left(self) :
         move = Twist()
 
-        # rospy.loginfo(self.laser_right_data)
+        rospy.logerr('READY TO TURN LEFT')
 
-        mini = min(min(self.regions['starboard_bow']), min(self.regions['port_bow']))
-        rospy.loginfo("Left Turn: %s", mini)
+        # 'starboard_bow' : self.scans[408:543],
+        # 'port_abeam_bow' : self.scans[679:814],
+
+        # mid = min(min(self.regions['starboard_bow']), min(self.regions['port_bow']))
+        # rospy.loginfo("Left Turn: %s", mini)
 
         # if min(self.laser_front_data[22:26]) != math.isinf :
         #     move.angular.z = 0.1
@@ -271,14 +270,19 @@ if __name__ == "__main__":
     rospy.Subscriber('/scans', LaserScan, tasker.callbackScans)
     rospy.Subscriber('/odom', Odometry, tasker.callbackOdometry)
 
+    tasker.change_state( tasker.sweeper_states['LOCATE-RIGHT-WALL'] )
+    # tasker.change_state( tasker.sweeper_states['DRIVE'] )
+
     while not rospy.is_shutdown() :
         if tasker.lasers_engaged() :
 
-            tasker.direction_check()
+            # tasker.direction_check()
             
             tasker.sweeper_move = Twist()
             if tasker.sweeper_state == tasker.sweeper_states['LOCATE-RIGHT-WALL'] : # 1 : 'locate right wall',
                 tasker.sweeper_move = tasker.locate_right_wall()
+            elif tasker.sweeper_state == tasker.sweeper_states['DRIVE'] : 
+                tasker.sweeper_move = tasker.drive() # drive straight
             elif tasker.sweeper_state == tasker.sweeper_states['TURNLEFT'] : 
                 tasker.sweeper_move = tasker.turn_left() # turn-left ==> follow-kerb
             elif tasker.sweeper_state == tasker.sweeper_states['FOLLOWKERB'] : 
