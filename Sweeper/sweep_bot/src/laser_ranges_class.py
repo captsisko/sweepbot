@@ -99,11 +99,11 @@ class LaserRangeTesting :
         # rospy.loginfo( self.subR )
         # rospy.loginfo('Length: %s', len(combined_array))
 
-    def direction_check(self) :
-        rospy.loginfo("Right Minimum: %s", self.min(self.subR))
-        rospy.loginfo("Front Minimum: %s", self.min(self.subF))
-        rospy.loginfo("Left  Minimum: %s", self.min(self.subL))
-        rospy.loginfo('-----------------------------')
+    # def direction_check(self) :
+    #     rospy.loginfo("Right Minimum: %s", self.min(self.subR))
+    #     rospy.loginfo("Front Minimum: %s", self.min(self.subF))
+    #     rospy.loginfo("Left  Minimum: %s", self.min(self.subL))
+    #     rospy.loginfo('-----------------------------')
 
     def testing(self) :
         self.subR = self.replace_inf(self.subR)
@@ -135,17 +135,17 @@ class LaserRangeTesting :
         if not math.isinf(entry) :
             return True
 
-    def laser_mid_mesurement(self) :
-        combined_array = self.subFR + self.subR
-        count = len(combined_array)
-        mid = len(combined_array)/2
-        # rospy.loginfo(combined_array)
-        # rospy.loginfo( "Count: %s, Mid: %s", count, mid )
-        rospy.loginfo("-----------------------------------------")
-        rospy.loginfo( "INDEX#0: %s", combined_array[0] )
-        rospy.loginfo( "INDEX#%s: %s", mid, combined_array[mid] )
-        rospy.loginfo( "INDEX#73: %s", combined_array[73] )
-        rospy.loginfo("-----------------------------------------")
+    # def laser_mid_mesurement(self) :
+    #     combined_array = self.subFR + self.subR
+    #     count = len(combined_array)
+    #     mid = len(combined_array)/2
+    #     # rospy.loginfo(combined_array)
+    #     # rospy.loginfo( "Count: %s, Mid: %s", count, mid )
+    #     rospy.loginfo("-----------------------------------------")
+    #     rospy.loginfo( "INDEX#0: %s", combined_array[0] )
+    #     rospy.loginfo( "INDEX#%s: %s", mid, combined_array[mid] )
+    #     rospy.loginfo( "INDEX#73: %s", combined_array[73] )
+    #     rospy.loginfo("-----------------------------------------")
 
     def quaternions_to_euler_angles(self) :
         if not self.target_acquired :
@@ -189,22 +189,46 @@ class LaserRangeTesting :
         return tuple( item for item in set if item != 26.0 )
 
     def averaging(self, set) :
-        count = len(set)
+        # count = len(set)
         # clean_set = set
+        
         clean_set = self.clear_inf_values(set)
+        count = len(set)
+        
         total = 0
         for i in clean_set :
             total += i
-        rospy.loginfo('COUNT: %s', count)
-        rospy.loginfo('TOTAL: %s', total)
+        rospy.loginfo('COUNT ALL DATA: %s', count)
+        rospy.loginfo('TOTAL CLEAN DATA: %s', total)
         rospy.loginfo('AVERAGE: %s', total/count)
-        rospy.loginfo('To Degrees: %s', math.cos(total/count))
+        rospy.loginfo('To Degrees[cos()]: %s', math.cos(total/count))
+        rospy.loginfo('To Degrees[degrees()]: %s', math.degrees(total/count))
+        rospy.loginfo('---------------------------------------------------------')
 
     def distance(self, section) :
         if section == 'bow' :
             rospy.loginfo( len( self.regions['starboard_bow'] ) )
             rospy.loginfo( len( self.clear_inf_values(self.regions['starboard_bow']) ) )
             self.averaging(self.regions['starboard_bow'] + self.regions['port_bow'])
+        if section == 'port_bow' :
+            count = len(self.regions['port_bow'])
+            # rospy.loginfo('COUNT: %s', count)
+            # rospy.loginfo('COUNT DIVISION: %s', count/4)
+            # sections = self.regions['port_bow'] / 4
+            # rospy.loginfo( 'sections[0]: %s', self.regions['port_bow'][0:32] )
+            # self.averaging( self.regions['port_bow'][0:32] )
+            # rospy.loginfo( 'sections[1]: %s', self.regions['port_bow'][33:66] )
+            # self.averaging( self.regions['port_bow'][33:66] )
+            # rospy.loginfo( 'sections[2]: %s', self.regions['port_bow'][67:100] )
+            # self.averaging( self.regions['port_bow'][67:100] )
+            # rospy.loginfo( 'sections[3]: %s', self.regions['port_bow'][101:134] )
+            # self.averaging( self.regions['port_bow'][101:134] )
+            # self.averaging( self.regions['port_bow'][0:32] + self.regions['port_bow'][33:66] + self.regions['port_bow'][67:100] + self.regions['port_bow'][101:134] )
+            data = self.medianValues( 3 )
+            rospy.loginfo(data)
+            self.averaging( data )
+            # exit()
+
         # elif section == 'port' :
         #     return 
         # elif section == 'abeam_starboard' :
@@ -215,6 +239,38 @@ class LaserRangeTesting :
         else :
             rospy.loginfo('Something went wrong!')
         # exit()
+
+    def medianValues(self, range) :
+        arr = self.regions['port_bow'][33:66]
+        range_length = len(arr)
+        
+        # arr = np.arange(21)
+        # np.random.shuffle(arr)
+        # range_length = len(arr)
+        # rospy.loginfo(arr)
+
+        # rospy.loginfo('Length ...: %s', range_length)
+        # if range_length % 2 > 0 :
+        #     rospy.loginfo('ODD length')
+        # else :
+        #     rospy.loginfo('EVEN length')
+
+        median = range_length / 2
+
+        # rospy.loginfo("RANGE: %s", range)
+        # rospy.loginfo('Median: %s => value: %s', median, arr[median])
+        # rospy.loginfo("TYPE: %s", type( int(range) ))
+
+        range = int(range)
+        start = stop = (range-1) / 2
+
+        # rospy.loginfo("start: %s, stop: %s", start, stop)
+
+        rospy.loginfo( arr[median-start : median+stop+1] )
+
+        return arr[median-start : median+stop+1]
+
+        exit()
 
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
@@ -259,6 +315,14 @@ if __name__ == "__main__" :
         rospy.loginfo('CHECKING DIRECTION : %s', direction)
         distance = True
 
+    medianValues = False
+    midValues = 1
+    if "medianValues=" in str(sys.argv) :
+        medianValues_args = sys.argv[1]
+        midValues = medianValues_args.split('=')[1]
+        rospy.loginfo('CHECKING MID-VALUE RANGE : %s', midValues)
+        medianValues = True
+
     rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
     rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
     rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
@@ -287,6 +351,8 @@ if __name__ == "__main__" :
                 rangeTester.angles(section)
             if distance :
                 rangeTester.distance(direction)
+            if medianValues :
+                rangeTester.medianValues(midValues)
         else :
             rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
 
