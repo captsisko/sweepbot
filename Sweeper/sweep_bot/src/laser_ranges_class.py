@@ -224,7 +224,7 @@ class LaserRangeTesting :
             # rospy.loginfo( 'sections[3]: %s', self.regions['port_bow'][101:134] )
             # self.averaging( self.regions['port_bow'][101:134] )
             # self.averaging( self.regions['port_bow'][0:32] + self.regions['port_bow'][33:66] + self.regions['port_bow'][67:100] + self.regions['port_bow'][101:134] )
-            data = self.medianValues( 3 )
+            data = self.getMedianRange( 3 )
             rospy.loginfo(data)
             self.averaging( data )
             # exit()
@@ -240,26 +240,26 @@ class LaserRangeTesting :
             rospy.loginfo('Something went wrong!')
         # exit()
 
-    def medianValues(self, range) :
-        arr = self.regions['port_bow'][33:66]
-        range_length = len(arr)
+    def getMedianRange(self, range, limits=[33,66]) :
+        arr = self.regions['port_bow'][limits[0]:limits[1]]
+        arr_length = len(arr)
         
         # arr = np.arange(21)
         # np.random.shuffle(arr)
-        # range_length = len(arr)
+        # arr_length = len(arr)
         # rospy.loginfo(arr)
 
-        # rospy.loginfo('Length ...: %s', range_length)
-        # if range_length % 2 > 0 :
+        # rospy.loginfo('Length ...: %s', arr_length)
+        # if arr_length % 2 > 0 :
         #     rospy.loginfo('ODD length')
         # else :
         #     rospy.loginfo('EVEN length')
 
-        median = range_length / 2
+        median = arr_length / 2
 
-        # rospy.loginfo("RANGE: %s", range)
-        # rospy.loginfo('Median: %s => value: %s', median, arr[median])
-        # rospy.loginfo("TYPE: %s", type( int(range) ))
+        rospy.loginfo("RANGE: %s", range)
+        rospy.loginfo('Median: %s => value: %s', median, arr[median])
+        rospy.loginfo("TYPE: %s", type( int(range) ))
 
         range = int(range)
         start = stop = (range-1) / 2
@@ -352,7 +352,7 @@ if __name__ == "__main__" :
             if distance :
                 rangeTester.distance(direction)
             if medianValues :
-                rangeTester.medianValues(midValues)
+                rangeTester.getMedianRange(midValues)
         else :
             rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
 

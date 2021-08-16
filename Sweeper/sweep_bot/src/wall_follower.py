@@ -137,9 +137,38 @@ class Tasker :
         # rospy.loginfo( "MEDIAN VALUE: %s", self.scans.index(median) )
         # return self.scans.index(median)
 
-    def getAverage(self, range) :
-        range_list = self.clean_set( list( self.scans[range[0] : range[1]] ) )
-        range_average = numpy.average(range_list)
+    def getMedianRange(self, range, limits=[33,66]) :
+        arr = self.scans[ limits[0] : limits[1] ]
+        arr_length = len(arr)
+        
+        median = arr_length / 2
+
+        # rospy.loginfo("RANGE: %s", range)
+        # rospy.loginfo("LIMITS: %s", limits)
+        # rospy.loginfo('Median: %s => value: %s', median, arr[median])
+        # rospy.loginfo("TYPE: %s", type( int(range) ))
+        # rospy.loginfo("ARR: %s", arr )
+
+        range = int(range)
+        start = stop = (range-1) / 2
+
+        # rospy.loginfo("start: %s, stop: %s", start, stop)
+
+        data = self.clean_set( arr[median-start : median+stop+1] )
+
+        # rospy.loginfo( data )
+
+        return data
+
+    # def getAverage(self, range) :
+    #     range_list = self.clean_set( list( self.scans[range[0] : range[1]] ) )
+    #     range_average = numpy.average(range_list)
+    #     rospy.loginfo("Average: %s", range_average)
+    #     return range_average
+    
+    def getAverage(self, list) :
+        # range_list = self.clean_set( list( self.scans[range[0] : range[1]] ) )
+        range_average = numpy.average(list)
         rospy.loginfo("Average: %s", range_average)
         return range_average
 
@@ -178,17 +207,16 @@ class Tasker :
 
     def drive(self) :
         move = Twist()
+
         # 'starboard_bow' : self.scans[408:543],
-        # 'port_abeam_bow' : self.scans[679:814],
+        # 'port_bow' : self.scans[544:679],
          
-        # self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
-        # rospy.loginfo(self.scans[408:814])
-        midpoint = self.getMedian([408/3, 814/3])
-        rospy.loginfo('[DRIVE]midpoint: %s with value: %s', midpoint, self.scans[midpoint])
+        midRanges = self.getMedianRange(11, [408, 679]) # 
+        midRangeAverage = self.getAverage(midRanges)
 
-        range = self.getAverage([408, 814])
+        rospy.loginfo('[DRIVE]Average: %s', midRangeAverage)
 
-        if( range <= 0.5 ) :
+        if( midRangeAverage <= 1.5 ) :
             self.change_state( self.sweeper_states['TURNLEFT'] )
         else :
             move.linear.x = 0.5
