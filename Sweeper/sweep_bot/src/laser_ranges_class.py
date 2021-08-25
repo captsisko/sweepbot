@@ -5,12 +5,15 @@ import sys
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
-from rospy.core import loginfo, rospyinfo
+from rospy.core import loginfo, rospyerr, rospyinfo
 from sensor_msgs.msg import LaserScan
 import math
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from geometry_msgs.msg import Twist
+import time
+from sweep_bot.msg import Space
+from sweep_bot.msg import SpaceArray
 
 class LaserRangeTesting :
     
@@ -21,6 +24,7 @@ class LaserRangeTesting :
     target = 0 # degrees to be applied to yaw
     kP = 0.5
     yaw = 0
+    openspace_index = 0
     
     def callbackFront(self, msg) :
         # rospy.logerr("Front Laser Data")
@@ -47,26 +51,7 @@ class LaserRangeTesting :
 
     def callbackScans(self, msg) :
         self.scans = msg.ranges
-        # for index in range(0, 135, 135) :
-        # self.scan_fore = range(0, 135, 135)
-        # self.regions = {
-        #     'starboard_aft' : self.scans[0:135],
-        #     'starboard_abeam_aft' : self.scans[136:271],
-        #     'starboard_abeam_bow' : self.scans[272:407],
-        #     'starboard_bow' : self.scans[408:543],
-        #     'port_aft' : self.scans[949:1084],
-        #     'port_abeam_aft' : self.scans[814:949],
-        #     'port_abeam_bow' : self.scans[679:814],
-        #     'port_bow' : self.scans[544:679],
-        # }
         self.regions = {
-            # 'starboard' : {
-            #     'bow'   : {
-            #     }
-            # },
-            # 'test' : {
-            #     np.arange(3, 30)
-            # },
             'starboard_aft' : self.scans[0:135],
             'starboard_abeam_aft' : self.scans[136:271],
             'starboard_abeam_bow' : self.scans[272:407],
@@ -76,7 +61,6 @@ class LaserRangeTesting :
             'port_abeam_bow' : self.scans[679:814],
             'port_bow' : self.scans[544:679],
         }
-        # rospy.loginfo('TESTING: %s', self.regions['test'][7])
 
     def callbackOdom(self, odom) :
         orientation = odom.pose.pose.orientation
@@ -86,6 +70,10 @@ class LaserRangeTesting :
         self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         yaw_degrees = (yaw) * math.pi/180
         # rospy.loginfo("Yaw in degress: %s", yaw_degrees)
+
+    def callbackScansFreespace(self, msg) :
+        # rospy.loginfo(msg)
+        self.freespace = msg
 
     def parallel_testing(self) :
         # combined_array = self.subR
@@ -163,6 +151,26 @@ class LaserRangeTesting :
                 rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
                 pub.publish(command)
 
+    def quaternions_to_euler_angles_2(self, point) :
+        if not self.target_acquired :
+            pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+            command = Twist()
+            # target = self.target * math.pi/180 # converting degrees into radians
+
+            target = -3.14159274101 + (point * 0.00579999992624)
+
+            # target = (self.target + 90) * math.pi/180 # converting degrees into radians
+            if format(target, '.1f') == format(self.yaw, '.1f') :
+                command.angular.z = 0
+                rospy.logerr('Target Aqcuired!')
+                self.target_acquired = True
+                exit()
+            else :
+                command.angular.z = self.kP * (target - self.yaw)
+                rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
+                pub.publish(command)
+
+
     def scansTest(self) :
         rospy.loginfo("-----------------------------------------")
         rospy.loginfo("Scans size: %s", len(self.subF))
@@ -212,49 +220,15 @@ class LaserRangeTesting :
             self.averaging(self.regions['starboard_bow'] + self.regions['port_bow'])
         if section == 'port_bow' :
             count = len(self.regions['port_bow'])
-            # rospy.loginfo('COUNT: %s', count)
-            # rospy.loginfo('COUNT DIVISION: %s', count/4)
-            # sections = self.regions['port_bow'] / 4
-            # rospy.loginfo( 'sections[0]: %s', self.regions['port_bow'][0:32] )
-            # self.averaging( self.regions['port_bow'][0:32] )
-            # rospy.loginfo( 'sections[1]: %s', self.regions['port_bow'][33:66] )
-            # self.averaging( self.regions['port_bow'][33:66] )
-            # rospy.loginfo( 'sections[2]: %s', self.regions['port_bow'][67:100] )
-            # self.averaging( self.regions['port_bow'][67:100] )
-            # rospy.loginfo( 'sections[3]: %s', self.regions['port_bow'][101:134] )
-            # self.averaging( self.regions['port_bow'][101:134] )
-            # self.averaging( self.regions['port_bow'][0:32] + self.regions['port_bow'][33:66] + self.regions['port_bow'][67:100] + self.regions['port_bow'][101:134] )
             data = self.getMedianRange( 3 )
             rospy.loginfo(data)
             self.averaging( data )
-            # exit()
-
-        # elif section == 'port' :
-        #     return 
-        # elif section == 'abeam_starboard' :
-        #     return 
-        # elif section == 'abeam_port' :
-        #     return 
-        # rospy.loginfo(self.regions[section])
         else :
             rospy.loginfo('Something went wrong!')
-        # exit()
 
     def getMedianRange(self, range, limits=[33,66]) :
         arr = self.regions['port_bow'][limits[0]:limits[1]]
         arr_length = len(arr)
-        
-        # arr = np.arange(21)
-        # np.random.shuffle(arr)
-        # arr_length = len(arr)
-        # rospy.loginfo(arr)
-
-        # rospy.loginfo('Length ...: %s', arr_length)
-        # if arr_length % 2 > 0 :
-        #     rospy.loginfo('ODD length')
-        # else :
-        #     rospy.loginfo('EVEN length')
-
         median = arr_length / 2
 
         rospy.loginfo("RANGE: %s", range)
@@ -264,13 +238,75 @@ class LaserRangeTesting :
         range = int(range)
         start = stop = (range-1) / 2
 
-        # rospy.loginfo("start: %s, stop: %s", start, stop)
-
         rospy.loginfo( arr[median-start : median+stop+1] )
 
         return arr[median-start : median+stop+1]
 
         exit()
+
+    def getOpenAir(self, freeSpace) :
+        rospy.loginfo('Testing: %s', freeSpace)
+
+        # 'port_aft' : self.scans[949:1084],
+        # 'port_abeam_aft' : self.scans[814:949],
+        # 'port_abeam_bow' : self.scans[679:814],
+        # 'port_bow' : self.scans[544:679],
+
+        port_data = self.regions['port_bow'] + self.regions['port_abeam_bow'] + self.regions['port_abeam_aft'] + self.regions['port_aft']
+
+        self.arr = port_data
+        # self.arr = (0.886091411113739, 26.0, 0.8820672631263733, 0.8699256777763367, 0.8702948689460754, 0.8681122064590454, 26.0, 26.0, 26.0, 26.0, 26.0, 0.7634991407394409, 0.7808852791786194, 0.7952740788459778, 26.0, 26.0, 26.0, 26.0, 26.0)
+
+        match_index = self.arr.index(26.0, self.openspace_index)
+
+        space = []
+        spaces = []
+
+        for i in range( len(self.arr) ) :
+            # rospy.loginfo("Comparing OpenSpace-Index: %s to Array Length: %s", i, len(self.arr)-1)
+            # rospy.loginfo("%s ===>>> %s", i, self.arr[i])
+            if self.arr[i] == 26.0 :
+                match_index = i
+                space = []
+                for j in range(0, 5) :
+                    try :
+                        if self.arr[match_index + j] == 26.0 :
+                            space.append(True)
+                        else :
+                            space.append(False)
+                        j += 1
+                    except IndexError :
+                        # rospy.logerr('Out of range')
+                        self.openspace_index = 0
+
+                rospy.loginfo(space)
+
+                if space.count(True) == 5 and False not in space :
+                    rospy.logwarn('space open-air begining at index: %s', match_index)
+                #     rospy.logwarn("Sequence space!")
+                    spaces.append(match_index)
+                else :
+                    rospy.logerr("No sequence space!")
+
+            self.openspace_index += 5
+
+        rospy.loginfo('Spaces ===>>> %s', spaces)
+
+    def frontOfRobot(self) :
+        rospy.loginfo( self.regions['port_bow'] )
+        exit()
+
+    def msg_test(self) :
+        # rospy.loginfo( self.freespace.spaces )
+
+        for freespace in self.freespace.spaces :
+            freespace = Space(freespace.region, freespace.spaces)
+            # rospy.loginfo( freespace.region )
+            spaces = freespace.spaces.split(',')
+            rospy.loginfo( spaces[7] )
+            rospy.loginfo( int(spaces[7]) )
+            # test = freespace.spaces
+            # rospy.loginfo(test)
 
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
@@ -323,10 +359,27 @@ if __name__ == "__main__" :
         rospy.loginfo('CHECKING MID-VALUE RANGE : %s', midValues)
         medianValues = True
 
-    rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
-    rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
-    rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
+    openAirDetected = False
+    freeSpace = 1
+    if "openAir=" in str(sys.argv) :
+        openAir_args = sys.argv[1]
+        freeSpace = openAir_args.split('=')[1]
+        rospy.loginfo('CHECKING MID-VALUE RANGE : %s', freeSpace)
+        openAirDetected = True
+
+    front = False
+    if "front" in str(sys.argv) :
+        front = True
+
+    msg_test = False
+    if "msg_test" in str(sys.argv) :
+        msg_test = True
+
+    # rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
+    # rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
+    # rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
     # rospy.Subscriber('/scan_center', LaserScan, rangeTester.callbackScans)
+    rospy.Subscriber('/scans_freespace', SpaceArray, rangeTester.callbackScansFreespace)
     rospy.Subscriber('/scans', LaserScan, rangeTester.callbackScans)
     rospy.Subscriber('/odom', Odometry, rangeTester.callbackOdom)
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
@@ -353,7 +406,16 @@ if __name__ == "__main__" :
                 rangeTester.distance(direction)
             if medianValues :
                 rangeTester.getMedianRange(midValues)
+            if openAirDetected :
+                rangeTester.getOpenAir(freeSpace)
+                # break
+            if front :
+                rangeTester.frontOfRobot()
+                # break
+            if msg_test :
+                rangeTester.msg_test()
         else :
-            rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
+            # rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
+            rospy.loginfo("rangeTester.scans: %s", rangeTester.scans)
 
         rate.sleep()

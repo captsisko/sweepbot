@@ -1,0 +1,2 @@
+string region
+string spaces
