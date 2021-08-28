@@ -30,20 +30,22 @@ class FreeSpace :
         }
 
     def publish(self) :
-        # message_pub = rospy.Publisher("scans_freespace", SpaceArray, queue_size=10)
-
-        # self.getOpenAir('port_bow')
-        # rospy.loginfo(self.scans)
-
         spacesArray = SpaceArray()
-
         for region in self.regions :
             space = Space()
             space.region = region
             space.spaces = self.getOpenAir(region)
+            # space.space = str({region : self.getOpenAir(region)})
             spacesArray.spaces.append(space)
-
         publisher.publish( spacesArray )
+
+        # test = []
+        # for region in self.regions :
+        #     space = Space()
+        #     space.space = str({region : self.getOpenAir(region)})
+
+        #     # rospy.loginfo( space )
+        # publisher.publish( space )
 
     def getOpenAir(self, region) :
         rospy.loginfo("Checking region: %s", region)
