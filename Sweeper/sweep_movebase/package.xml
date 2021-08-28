@@ -58,7 +58,7 @@
   <exec_depend>actionlib</exec_depend>
   <exec_depend>move_base</exec_depend>
   <exec_depend>rospy</exec_depend>
-  <depend>sweepbot_tools</depend>
+  <!-- <depend>sweepbot_tools</depend> -->
 
 
   <!-- The export tag contains other, unspecified, tags -->

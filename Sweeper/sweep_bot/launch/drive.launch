@@ -19,6 +19,7 @@
         <remap from="scan" to="hokuyo_scan"/>
         <!-- <param name="base_frame_id" value="chasis"/> -->
         <!-- <param name="base_frame_id" value="chasis_footprint"/> -->
+        <param name="frame_id" value="/map"/>
     </node>
 
     <node name="move_base" pkg="move_base" type="move_base" output="screen">

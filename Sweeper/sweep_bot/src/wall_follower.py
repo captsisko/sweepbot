@@ -5,6 +5,7 @@
 import rospy
 # from rospy.core import loginfo
 import math
+from rospy.timer import sleep
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
@@ -18,6 +19,8 @@ from tf.transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
 from sweep_bot.msg import Space
 from sweep_bot.msg import SpaceArray
+import ast
+import json
 
 class Tasker :
 
@@ -52,10 +55,11 @@ class Tasker :
         self.debugMode = False
         self.median = -1000
         self.openspace_index = 0
-        self.freespace = []
+        self.freespaces = {}
 
         self.target = 0 # degrees to be applied to yaw
         self.kP = 0.5
+        self.rotation_successful = False
 
     def callbackLeft(self, msg) :
         self.laser_left_data = filter(self.replace_inf, msg.ranges)
@@ -80,8 +84,8 @@ class Tasker :
         }
 
     def callbackScansFreespace(self, msg) :
-        # rospy.loginfo(msg)
-        self.freespace = msg
+        for spaces in msg.spaces :
+            self.freespaces[spaces.region] = list( filter(None, spaces.spaces.split(',')) )
 
     def callbackOdometry(self, odom) :
         # rospy.loginfo(odom.pose.pose)
@@ -175,6 +179,12 @@ class Tasker :
 
     def getRotationSpeed(self, angle) :
         return self.kP * (angle - self.yaw)
+
+    def clear_air(self) :
+        if self.regions['port_bow'][0] == 26.0 :
+            return True
+        else :
+            return False
         
     def locate_right_wall(self) :
         move = Twist()
@@ -220,52 +230,53 @@ class Tasker :
     def turn_left(self) :
         move = Twist()
 
-        rospy.logerr('READY TO TURN LEFT')
+        if not self.clear_air() :
+            rospy.loginfo('OBSTACLES AHEAD!!')
+            # return
 
-        # 'starboard_aft' : self.scans[0:135],
-        # 'starboard_abeam_aft' : self.scans[136:271],
-        # 'starboard_abeam_bow' : self.scans[272:407],
-        # 'starboard_bow' : self.scans[408:543],
-        # 'port_aft' : self.scans[949:1084],
-        # 'port_abeam_aft' : self.scans[814:949],
-        # 'port_abeam_bow' : self.scans[679:814],
-        # 'port_bow' : self.scans[544:679],
+            rospy.logerr('READY TO TURN LEFT')
 
-        # rospy.loginfo(self.regions['port_abeam_aft'])
-        # rospy.loginfo(self.regions['port_abeam_bow'])
-        # rospy.loginfo(self.regions['port_abeam_aft'])
-        # exit()
+            port_regions = ['port_bow', 'port_abeam_bow', 'port_abeam_aft', 'port_aft']
 
-        port_regions = ['port_bow', 'port_abeam_bow', 'port_abeam_aft', 'port_aft']
-        # rospy.loginfo( self.freespace )
-        for freespaces in self.freespace.spaces :
-            # space = Space(space.region, space.spaces)
-            # rospy.loginfo( space )
-            # if space.region == 'port_aft' :
-            # rospy.loginfo( space.region )
-            spaces = freespaces.spaces
-            rospy.loginfo( spaces[0] )
-            # rospy.loginfo(self.freespace.spaces.size())
-            # rospy.loginfo(self.freespace.spaces.size())
-            # rospy.loginfo(space.spaces.size())
+            offest = 0
+            for key, region in enumerate(port_regions) :
+                # rospy.loginfo('%s with %s spaces and capacity of %s', region, len(self.freespaces[region]), len(self.regions[region]) )
+                # rospy.loginfo( self.freespaces[region] )
 
-        # **************************************************************************
-        # spaces = [96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130]
-        # rospy.loginfo("Checking spaces array: %s", spaces[5] )
-        # angle = self.getTargetAngle( self.scans[130] )
-        # speed = self.getRotationSpeed( angle ) * -1
+                if len(self.freespaces[region]) == 0 :
+                    offest += len(self.regions[region])
+                else :
+                    # rospy.loginfo("Processing[%s]: %s", key, self.freespaces[region])
+                    for index, space in enumerate(self.freespaces[region]) :
+                        offest += index
+                        rospy.logwarn("[OFFSET: %s] INDEX: %s ==> SPACE: %s", offest, index, space)
 
-        # if format(angle, '.2f') == format(self.yaw, '.2f') :
-        #     move.angular.z = 0
-        # else :
-        #     move.angular.z = speed
+                        space = int(space)
+                        angle = self.getTargetAngle( space )
+                        speed = self.getRotationSpeed( angle ) * -1
 
-        # rospy.loginfo("Distance front of robot: %s", self.regions['port_bow'][0]) 
-        # if self.regions['port_bow'][0] != 26.0 :
-        #     rospy.logerr("Obstacle ahead of robot")
-        # else :
-        #     rospy.loginfo("Clear air ahead of robot") 
-        # **************************************************************************
+                        if format(angle, '.2f') != format(self.yaw, '.2f') :
+                            rospy.logerr("Obstacle ahead of robot")
+                            rospy.loginfo('Target: %s, Yaw: %s', angle, self.yaw)
+                            move.angular.z = speed
+                            rospy.sleep(5)
+                        else :
+                            rospy.logerr("Target Obtained")
+                            move.angular.z = 0
+                        # rospy.loginfo("Distance front of robot: %s", self.regions['port_bow'][0]) 
+                        # if not self.clear_air() :
+                        #     rospy.logerr("Obstacle ahead of robot")
+                        #     move.angular.z = speed
+                        #     rospy.loginfo('Target: %s, Yaw: %s', angle, self.yaw)
+                        # else :
+                        #     rospy.loginfo("Clear air ahead of robot")
+                        #     move.angular.z = 0
+                        break
+                    else :
+                        rospy.logerr("While loop complete")
+                        # exit()
+                    
+                        # rospy.sleep(3)
 
         return move
 
@@ -327,8 +338,10 @@ if __name__ == "__main__":
     rospy.Subscriber('/scans', LaserScan, tasker.callbackScans)
     rospy.Subscriber('/odom', Odometry, tasker.callbackOdometry)
 
-    tasker.change_state( tasker.sweeper_states['LOCATE-RIGHT-WALL'] )
-    # tasker.change_state( tasker.sweeper_states['TURNLEFT'] )
+    if "direction=left" in str(sys.argv) :
+        tasker.change_state( tasker.sweeper_states['TURNLEFT'] )
+    else :
+        tasker.change_state( tasker.sweeper_states['LOCATE-RIGHT-WALL'] )
 
     while not rospy.is_shutdown() :
         if tasker.lasers_engaged() :

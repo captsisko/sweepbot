@@ -30,34 +30,22 @@ class FreeSpace :
         }
 
     def publish(self) :
-        # message_pub = rospy.Publisher("scans_freespace", SpaceArray, queue_size=10)
-
-        # self.getOpenAir('port_bow')
-        # rospy.loginfo(self.scans)
-
         spacesArray = SpaceArray()
-
         for region in self.regions :
             space = Space()
             space.region = region
-            space.spaces = self.getOpenAir(region)
+            space.spaces = self.getOpenAir(region)[:-1]
+            # space.space = str({region : self.getOpenAir(region)})
             spacesArray.spaces.append(space)
-
         publisher.publish( spacesArray )
 
     def getOpenAir(self, region) :
-        rospy.loginfo("Checking region: %s", region)
-        rospy.loginfo("Checking scans: %s", self.scans)
-
         # 'port_aft' : self.scans[949:1084],
         # 'port_abeam_aft' : self.scans[814:949],
         # 'port_abeam_bow' : self.scans[679:814],
         # 'port_bow' : self.scans[544:679],
 
         self.arr = self.regions[region]
-        # self.arr = (0.886091411113739, 26.0, 0.8820672631263733, 0.8699256777763367, 0.8702948689460754, 0.8681122064590454, 26.0, 26.0, 26.0, 26.0, 26.0, 0.7634991407394409, 0.7808852791786194, 0.7952740788459778, 26.0, 26.0, 26.0, 26.0, 26.0)
-
-        # match_index = self.arr.index(26.0, self.openspace_index)
 
         spaces = []
         spaces_list = ''
@@ -82,12 +70,7 @@ class FreeSpace :
                 # rospy.loginfo(space)
 
                 if space.count(True) == 5 and False not in space :
-                    # rospy.logwarn('space open-air begining at index: %s', match_index)
-                #     rospy.logwarn("Sequence space!")
-                    spaces.append(match_index)
                     spaces_list += str(match_index) + ','
-                # else :
-                #     rospy.logerr("No sequence space!")
 
             self.openspace_index += 5
 

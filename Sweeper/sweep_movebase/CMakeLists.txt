@@ -8,7 +8,7 @@ project(sweep_movebase)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  sweepbot_tools
+  # sweepbot_tools
   actionlib
   move_base
   rospy
@@ -106,7 +106,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES sweep_movebase
- CATKIN_DEPENDS actionlib move_base rospy sweepbot_tools
+ CATKIN_DEPENDS actionlib move_base rospy #sweepbot_tools
 #  DEPENDS system_lib
 )
 
