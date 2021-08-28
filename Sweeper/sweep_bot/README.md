@@ -40,3 +40,6 @@ Below is a recording of using this test script to orient the robot to a desired 
 <!-- https://user-images.githubusercontent.com/3543536/129284802-5163f635-9c84-4db9-bc42-5d20af02a0e7.mp4 -->
 
 <!-- Arguments in **target=** mode are 0, 90, -90 and 180. -->
+
+# Dependencies installation
+sisko@rosbox:~/catkin_ws$ clear && rosdep install --from-paths src/
