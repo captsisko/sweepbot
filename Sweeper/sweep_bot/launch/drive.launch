@@ -9,6 +9,7 @@
 
     <include file='$(find gazebo_ros)/launch/empty_world.launch'>
         <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/> -->
+        <arg name="world_name" value='$(find sweep_bot)/worlds/wall_test_right.world'/>
     </include>
 
 
@@ -33,5 +34,7 @@
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="map_chasis_transform" args="0 0 0 0 0 0 chasis_footprint map 100"/>
+
+    <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
         
 </launch>

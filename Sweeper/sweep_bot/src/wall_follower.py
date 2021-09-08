@@ -19,9 +19,8 @@ from tf.transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
 from sweep_bot.msg import Space
 from sweep_bot.msg import SpaceArray
-import ast
-import json
-
+from sensor_msgs.msg import Imu
+from simple_pid import PID
 class Tasker :
 
     def __init__(self) :
@@ -41,6 +40,7 @@ class Tasker :
         # self.laser_left_data  = 0
         # self.laser_right_data = 0
         self.scans = 0
+        self.imu = {}
         self.scans_fore = []
         # self.lasers_frontleft_merge = tuple()
         # self.lasers_frontright_merge = tuple()
@@ -60,6 +60,8 @@ class Tasker :
         self.target = 0 # degrees to be applied to yaw
         self.kP = 0.5
         self.rotation_successful = False
+
+        self.gap = -1
 
     def callbackLeft(self, msg) :
         self.laser_left_data = filter(self.replace_inf, msg.ranges)
@@ -85,16 +87,31 @@ class Tasker :
 
     def callbackScansFreespace(self, msg) :
         for spaces in msg.spaces :
-            self.freespaces[spaces.region] = list( filter(None, spaces.spaces.split(',')) )
+            # rospy.loginfo(spaces)
+            self.freespaces[spaces.region] = spaces.gap
+
+    def yaw_from_euler_from_quaternion(self, orientation) :
+        (roll, pitch, yaw) = euler_from_quaternion(orientation)
+        return (yaw) * math.pi/180
 
     def callbackOdometry(self, odom) :
-        # rospy.loginfo(odom.pose.pose)
+        # orientation = odom.pose.pose.orientation
+        # self.orientation = [orientation.x, orientation.y, orientation.z, orientation.w]
+        # (roll, pitch, yaw) = euler_from_quaternion(self.orientation)
+        # self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
+        # yaw_degrees = (yaw) * math.pi/180
+
+        # to be refactored to use yaw_from_euler_from_quaternion() function
         orientation = odom.pose.pose.orientation
         self.orientation = [orientation.x, orientation.y, orientation.z, orientation.w]
         (roll, pitch, yaw) = euler_from_quaternion(self.orientation)
-        # rospy.logerr(yaw) # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         yaw_degrees = (yaw) * math.pi/180
+
+    def callbackIMU(self, imu) :
+        # rospy.loginfo( imu )
+        # self.imu['orientation'] = imu.orientation
+        self.imu['orientation'] = imu
 
     # def direction_check(self) :
     #     # self.sweeper_state = self.sweeper_states['LOCATE-RIGHT-WALL']
@@ -109,7 +126,7 @@ class Tasker :
     def clean_set(self, set) :
         set_list = list(set)
         occurances = set_list.count(26.0)
-        print('Occurances: %d' %(occurances))
+        # print('Occurances: %d' %(occurances))
         while set_list.count(26.0) :
             set_list.remove(26.0)
         return tuple(set_list)
@@ -161,7 +178,7 @@ class Tasker :
     def getAverage(self, list) :
         # range_list = self.clean_set( list( self.scans[range[0] : range[1]] ) )
         range_average = numpy.average(list)
-        rospy.loginfo("Average: %s", range_average)
+        # rospy.loginfo("Average: %s", range_average)
         return range_average
 
     def getMin(self, tuple1, tuple2) :
@@ -228,61 +245,140 @@ class Tasker :
         return move
 
     def turn_left(self) :
+
+        if self.gap == -1 :
+            self.gap = self.freespaces['port']
+            rospy.loginfo("GAP set to : %s", self.gap)
+            rospy.sleep(5)
+
         move = Twist()
 
-        if not self.clear_air() :
-            rospy.loginfo('OBSTACLES AHEAD!!')
-            # return
+        rospy.logerr('READY TO TURN LEFT')
 
-            rospy.logerr('READY TO TURN LEFT')
+        self.gap = int(self.gap)
+        rospy.loginfo( "GAP: %s", self.gap )
+        target = self.getTargetAngle( self.gap )
+        rospy.loginfo("Moving to %s degrees", math.degrees(target))
 
-            port_regions = ['port_bow', 'port_abeam_bow', 'port_abeam_aft', 'port_aft']
-
-            offest = 0
-            for key, region in enumerate(port_regions) :
-                # rospy.loginfo('%s with %s spaces and capacity of %s', region, len(self.freespaces[region]), len(self.regions[region]) )
-                # rospy.loginfo( self.freespaces[region] )
-
-                if len(self.freespaces[region]) == 0 :
-                    offest += len(self.regions[region])
-                else :
-                    # rospy.loginfo("Processing[%s]: %s", key, self.freespaces[region])
-                    for index, space in enumerate(self.freespaces[region]) :
-                        offest += index
-                        rospy.logwarn("[OFFSET: %s] INDEX: %s ==> SPACE: %s", offest, index, space)
-
-                        space = int(space)
-                        angle = self.getTargetAngle( space )
-                        speed = self.getRotationSpeed( angle ) * -1
-
-                        if format(angle, '.2f') != format(self.yaw, '.2f') :
-                            rospy.logerr("Obstacle ahead of robot")
-                            rospy.loginfo('Target: %s, Yaw: %s', angle, self.yaw)
-                            move.angular.z = speed
-                            rospy.sleep(5)
-                        else :
-                            rospy.logerr("Target Obtained")
-                            move.angular.z = 0
-                        # rospy.loginfo("Distance front of robot: %s", self.regions['port_bow'][0]) 
-                        # if not self.clear_air() :
-                        #     rospy.logerr("Obstacle ahead of robot")
-                        #     move.angular.z = speed
-                        #     rospy.loginfo('Target: %s, Yaw: %s', angle, self.yaw)
-                        # else :
-                        #     rospy.loginfo("Clear air ahead of robot")
-                        #     move.angular.z = 0
-                        break
-                    else :
-                        rospy.logerr("While loop complete")
-                        # exit()
-                    
-                        # rospy.sleep(3)
+        if format(target, '.2f') == format(self.yaw, '.2f') :
+            move.angular.z = 0
+            rospy.logerr('Target Aqcuired!')
+            # self.target_acquired = True
+            if not self.clear_air() :
+                # rospy.logwarn('Non-Clean Air Ahead!')
+                self.sweeper_state = self.sweeper_states['TURNLEFT']
+                self.gap += 20
+            else :
+                # rospy.logwarn('Clean Air Ahead!')
+                self.change_state( self.sweeper_states['FOLLOWKERB'] )
+        else :
+            move.angular.z = self.getRotationSpeed(target)
+            rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
 
         return move
 
     def follow_kerb(self) :
         move = Twist()
-        move.linear.x = 0.7
+
+        # average_right_distance = self.getAverage( self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) )
+        # rospy.loginfo("MAX: %s", max(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft'])))
+
+        # rospy.loginfo(self.imu['orientation'].x)
+
+        # rounding = 8
+
+        # target = round( self.getTargetAngle( 360 - 90 ), rounding )
+        # rospy.loginfo("Moving to %s degrees", math.degrees(target))
+
+        # imu = round(self.imu['orientation'].orientation.x, rounding)
+        # yaw = round(self.yaw, rounding)
+
+        # if target == yaw :
+        #     move.angular.z = 0
+        #     rospy.logerr('Target Aqcuired!')
+        #     # self.target_acquired = True
+        #     # exit()
+        #     # self.sweeper_state = self.sweeper_states['TURNLEFT']
+        #     # self.change_state( self.sweeper_states['DRIVE'] )
+        # else :
+        #     move.angular.z = self.getRotationSpeed(target)
+        # rospy.loginfo('Target: %s, Yaw: %s, Imu: %s', target, yaw, imu)
+        # rospy.logwarn(self.imu['orientation'])
+        # yaw2 = self.yaw_from_euler_from_quaternion( self.imu['orientation'].orientation )
+        # rospy.logerr("Yaw-2: %s", yaw2)
+        # rospy.loginfo("-----------------------------------------------------------------------------")
+
+        # setpoint = 1
+        # longest_distance_1 = max(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']))
+        # longest_distance = max( self.clean_set(self.regions['starboard_bow']) + self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) + self.clean_set(self.regions['starboard_aft']) )
+        # # pid = PID(1, 0.1, 0.05, setpoint)
+        # pid = PID(0.0, 1.0, 2.0, setpoint)
+
+        # # pid_edge_distance = pid(average_right_distance)
+
+        # pid_data = round( pid(longest_distance), 2 )
+        # rospy.loginfo("PID: %s", pid_data)
+        # rospy.loginfo("Longest Distance - Mid Starboard: %s", longest_distance_1)
+        # rospy.loginfo("Longest Distance - Full Starboard: %s", longest_distance)
+
+        # # if pid_edge_distance < setpoint :
+        # # if pid_edge_distance < (setpoint*-1) :
+        # if longest_distance > 1 :
+        #     move.linear.x = 0.3
+        #     # move.angular.z -= 0.2
+        #     move.angular.z -= pid_data * -1
+        #     rospy.logwarn("Turning [-]")
+        #     # rospy.sleep(1)
+        # # elif pid_edge_distance < (setpoint*-1) :
+        # else :
+        #     rospy.logwarn("Turning [+]")
+        #     # move.linear.x = 0.3
+        #     move.angular.z += 0.2
+        #     # rospy.sleep(1)
+        # rospy.loginfo("-----------------------------------------------------------------------------")
+
+        # if test < 1 :
+        #     move.angular.z -= 0.1
+        #     rospy.logwarn("Turning [-]")
+        # else :
+        #     move.angular.z += 0.1
+        #     rospy.logwarn("Turning [+]")
+        
+        # rospy.loginfo( "starboard_abeam_bow length uncleaned: %s", len(self.regions['starboard_abeam_bow']) )
+        # rospy.loginfo( "starboard_abeam_aft length uncleaned: %s", len(self.regions['starboard_abeam_aft']) )
+        # rospy.loginfo( "Totalled uncleaned: %s", len(self.regions['starboard_abeam_bow'] + self.regions['starboard_abeam_aft']) )
+        # rospy.logwarn( "Average uncleaned: %s", self.getAverage(self.regions['starboard_abeam_bow'] + self.regions['starboard_abeam_aft']) )
+
+        # rospy.loginfo( "starboard_abeam_bow length cleaned: %s", len(self.clean_set(self.regions['starboard_abeam_bow'])) )
+        # rospy.loginfo( "starboard_abeam_aft length cleaned: %s", len(self.clean_set(self.regions['starboard_abeam_aft'])) )
+        # rospy.loginfo( "Totalled cleaned: %s", len(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft'])) )
+        # rospy.logwarn( "Average cleaned: %s", self.getAverage(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft'])) )
+
+        # # rospy.loginfo("-----------------------------------------------------------------------------")
+        length = len( self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) )
+        data = numpy.sum( self.regions['starboard_abeam_bow'] + self.regions['starboard_abeam_aft'] )
+        rospy.logerr( "Average Experiment: %s", data/length )
+
+        average = self.getAverage( self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) )
+        average = self.getAverage( self.clean_set(self.regions['starboard_bow']) + self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) + self.clean_set(self.regions['starboard_aft']) )
+        # move.linear.x = 0.2
+        setpoint = 1
+        control = format(1.5 * (setpoint - average), '.2f')
+
+        rospy.logwarn("AVG: %s", average)
+        rospy.logerr("CONTROL: %s", control)
+        rospy.loginfo("DIFFERENCE: %s", setpoint - average)
+
+        if control == (setpoint*-1) :
+            rospy.loginfo("**************** %s ****************", control)
+
+        if control > setpoint :
+            move.angular.z -= 0.1
+            rospy.logwarn("Turning [-]")
+        else :
+            move.angular.z += 0.1
+            rospy.logwarn("Turning [+]")
+        rospy.loginfo("---------------------------------------")
         return move
 
     def change_state(self, previous_state) :
@@ -337,9 +433,12 @@ if __name__ == "__main__":
     rospy.Subscriber('/scans_freespace', SpaceArray, tasker.callbackScansFreespace)
     rospy.Subscriber('/scans', LaserScan, tasker.callbackScans)
     rospy.Subscriber('/odom', Odometry, tasker.callbackOdometry)
+    rospy.Subscriber('/imu', Imu, tasker.callbackIMU)
 
     if "direction=left" in str(sys.argv) :
         tasker.change_state( tasker.sweeper_states['TURNLEFT'] )
+    if "direction=follow" in str(sys.argv) :
+        tasker.change_state( tasker.sweeper_states['FOLLOWKERB'] )
     else :
         tasker.change_state( tasker.sweeper_states['LOCATE-RIGHT-WALL'] )
 
@@ -355,6 +454,8 @@ if __name__ == "__main__":
                 tasker.sweeper_move = tasker.turn_left() # turn-left ==> follow-kerb
             elif tasker.sweeper_state == tasker.sweeper_states['FOLLOWKERB'] : 
                 tasker.sweeper_move = tasker.follow_kerb() # turn-left ==> follow-kerb
+                # tasker.follow_kerb() # turn-left ==> follow-kerb
+                # rospy.loginfo("----------------------------------------------------")
             else :
                 tasker.sweeper_move = tasker.locate_right_wall()
             tasker.execute()

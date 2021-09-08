@@ -14,6 +14,7 @@ from geometry_msgs.msg import Twist
 import time
 from sweep_bot.msg import Space
 from sweep_bot.msg import SpaceArray
+from simple_pid import PID
 
 class LaserRangeTesting :
     
@@ -25,6 +26,12 @@ class LaserRangeTesting :
     kP = 0.5
     yaw = 0
     openspace_index = 0
+    pid_setpoint = 30
+    pid_kp = 4
+    pid_ki = 0.5
+    pid_kd = 2
+    pid_loop = 0
+    pub = ''
     
     def callbackFront(self, msg) :
         # rospy.logerr("Front Laser Data")
@@ -51,15 +58,45 @@ class LaserRangeTesting :
 
     def callbackScans(self, msg) :
         self.scans = msg.ranges
+        # self.regions = {
+        #     'starboard_aft' : self.scans[0:135],
+        #     'starboard_abeam_aft' : self.scans[136:271],
+        #     'starboard_abeam_bow' : self.scans[272:407],
+        #     'starboard_bow' : self.scans[408:543],
+        #     'port_aft' : self.scans[949:1084],
+        #     'port_abeam_aft' : self.scans[814:949],
+        #     'port_abeam_bow' : self.scans[679:814],
+        #     'port_bow' : self.scans[544:679],
+        # }
         self.regions = {
-            'starboard_aft' : self.scans[0:135],
-            'starboard_abeam_aft' : self.scans[136:271],
-            'starboard_abeam_bow' : self.scans[272:407],
-            'starboard_bow' : self.scans[408:543],
-            'port_aft' : self.scans[949:1084],
-            'port_abeam_aft' : self.scans[814:949],
-            'port_abeam_bow' : self.scans[679:814],
-            'port_bow' : self.scans[544:679],
+            'starboard' : {
+                'bow' : {
+                    'start' : 0, 
+                    'end' : -45,
+                    'region' : self.scans[408:543]
+                },
+                'abeam_bow' : {
+                    'start' : -45, 
+                    'end' :  -90,
+                    'region' : self.scans[272:407]
+                },
+                'abeam_aft' : {
+                    'start' : -90, 
+                    'end' : -135,
+                    'region' : self.scans[136:271]
+                },
+                'aft' : {
+                    'start' : -135, 
+                    'end' : -180,
+                    'region' : self.scans[0:135]
+                },
+            },
+            'port'  :   {
+                'bow' : self.scans[544:679],
+                'abeam_bow' : self.scans[679:814],
+                'abeam_aft' : self.scans[814:949],
+                'aft' : self.scans[949:1084],
+            }
         }
 
     def callbackOdom(self, odom) :
@@ -141,7 +178,7 @@ class LaserRangeTesting :
             command = Twist()
             target = self.target * math.pi/180 # converting degrees into radians
             # target = (self.target + 90) * math.pi/180 # converting degrees into radians
-            if format(target, '.1f') == format(self.yaw, '.1f') :
+            if round(target, 2) == round(self.yaw, 2) :
                 command.angular.z = 0
                 rospy.logerr('Target Aqcuired!')
                 self.target_acquired = True
@@ -187,11 +224,28 @@ class LaserRangeTesting :
         exit()
 
     def angles(self, section) :
-        if section == 'all' : 
-            rospy.loginfo(self.regions)
-        else :
-            rospy.loginfo(self.regions[section])
-        exit()
+        # rospy.loginfo( self.scans[135:406] )
+        self.target = 0
+        self.quaternions_to_euler_angles()
+        # if section == 'all' : 
+        #     rospy.loginfo(self.regions)
+        # else :
+        #     sections = section.split('_')
+        #     # rospy.loginfo(section)
+        #     # sections = {sections}
+        #     # sections = sections
+        #     rospy.loginfo(sections[2:])
+        #     # region = ''
+        #     # for index, i in enumerate(sections) :
+        #     #     # rospy.logerr("INDEX: %s ==> VALUE: %s", index, i)
+        #     #     if index == 0 :
+        #     #         region += i
+        #     #     else :
+        #     #         region += '_'+i
+        #     # rospy.loginfo("TESTING : %s", region)
+        #     # rospy.loginfo(self.regions[sections[0]])
+        #     rospy.loginfo(self.regions['port']['abeam']['aft'])
+        # exit()
 
     def clear_inf_values(self, set) :
         return tuple( item for item in set if item != 26.0 )
@@ -308,6 +362,59 @@ class LaserRangeTesting :
             # test = freespace.spaces
             # rospy.loginfo(test)
 
+    def laserReadings(self, arg) :
+        # 'port_aft' : self.scans[949:1084],
+        # 'port_abeam_aft' : self.scans[814:949],
+        # 'port_abeam_bow' : self.scans[679:814],
+        # 'port_bow' : self.scans[544:679],
+        # for i in range(10):
+        #     print '%-12i%-12i' % (10 ** i, 20 ** i)
+        index = 544
+        # for index, value in enumerate(self.regions['port_bow']) :
+        for value in self.regions['port_bow'] :
+            rospy.loginfo("Index: %s ===>>> Value: %s", index, value)
+            index += 1
+
+    def pidTest(self) :
+        # data = (50, 40, 36, 15, 25)
+        # for index, value in enumerate(data) :
+        #     # if index == 0 :
+        #     #     prevIndex = 0
+        #     # else :
+        #     #     prevIndex = data[index-1]
+        #     error = data[index] - self.pid_setpoint
+        #     rospy.loginfo("Error[%s - %s]: %s",data[index], self.pid_setpoint, error)
+        # exit()
+        move = Twist()
+
+        rospy.loginfo( self.regions['starboard']['bow']['end'] )
+        rospy.loginfo( self.regions['starboard']['abeam_bow']['region'][0] )
+        rospy.loginfo( self.regions['starboard']['abeam_aft']['region'][-1] )
+        # exit()
+
+        pid = PID(0.03, 0.0, 0.0, 1.5)
+        longest_distance_x = self.regions['starboard']['abeam_bow']['region'][0]
+        pid_longest_distance_x = round( pid(longest_distance_x), 2 )
+        rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
+
+        pid = PID(0.009, 0.0, 0.0, 1.5)
+        longest_distance_z = self.regions['starboard']['abeam_aft']['region'][-1]
+        pid_longest_distance_z = round( pid(longest_distance_z), 2 )
+        rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
+
+        if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
+            move.linear.x = pid_longest_distance_x * -1
+            move.angular.z -= pid_longest_distance_z * -1
+            rospy.logwarn("Turning [-]")
+        else :
+            rospy.logwarn("Turning [+]")
+            move.angular.z += 0.2
+        rospy.loginfo("-----------------------------------------------------------------------------")
+        rospy.loginfo(move)
+
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        pub.publish( move )
+
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
     rate = rospy.Rate(10) # Fixed update frequency of 10hz
@@ -375,6 +482,21 @@ if __name__ == "__main__" :
     if "msg_test" in str(sys.argv) :
         msg_test = True
 
+    laserReadingsDetected = False
+    freeSpace = 1
+    if "laserReadings=" in str(sys.argv) :
+        laserReadings_args = sys.argv[1]
+        laserReadings = laserReadings_args.split('=')[1]
+        # rospy.loginfo('CHECKING MID-VALUE RANGE : %s', laserReadings)
+        laserReadingsDetected = True
+
+    pid = False
+    if "pid" in str(sys.argv) :
+        # pid_args = sys.argv[1]
+        # pid = pid_args.split('=')[1]
+        # rospy.loginfo('CHECKING MID-VALUE RANGE : %s', laserReadings)
+        pid = True
+
     # rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
     # rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
     # rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
@@ -382,7 +504,7 @@ if __name__ == "__main__" :
     rospy.Subscriber('/scans_freespace', SpaceArray, rangeTester.callbackScansFreespace)
     rospy.Subscriber('/scans', LaserScan, rangeTester.callbackScans)
     rospy.Subscriber('/odom', Odometry, rangeTester.callbackOdom)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    rangeTester.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
     # command = Twist()
 
     while not rospy.is_shutdown():
@@ -414,6 +536,10 @@ if __name__ == "__main__" :
                 # break
             if msg_test :
                 rangeTester.msg_test()
+            if laserReadingsDetected :
+                rangeTester.laserReadings(laserReadings)
+            if pid :
+                rangeTester.pidTest()
         else :
             # rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
             rospy.loginfo("rangeTester.scans: %s", rangeTester.scans)

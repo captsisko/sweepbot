@@ -16,5 +16,5 @@
         <param name="range_max" value="3.0"/> -->
     </node>
 
-    <!-- <node name='scans_spaces' pkg="sweep_bot" type='freespace.py'/> -->
+    <node name='scans_spaces' pkg="sweep_bot" type='freespace.py'/>
 </launch>
