@@ -1,2 +1,3 @@
 string region
-Angle[] angle
+float32[] angles
+bool parallel

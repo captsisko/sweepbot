@@ -36,5 +36,7 @@
     <node pkg="tf" type="static_transform_publisher" name="map_chasis_transform" args="0 0 0 0 0 0 chasis_footprint map 100"/>
 
     <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
+
+    <node name="sweepbot_laser_angles" pkg="sweep_bot" type="angles.py" output="log" respawn="false" respawn_delay="0"/>
         
 </launch>

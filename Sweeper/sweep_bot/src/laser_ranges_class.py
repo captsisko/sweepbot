@@ -15,11 +15,14 @@ import time
 from sweep_bot.msg import Space
 from sweep_bot.msg import SpaceArray
 from simple_pid import PID
+from sweep_bot.msg import Angle
+from sweep_bot.msg import AngleArray
+from sweep_bot.msg import AnglesArray
 
 class LaserRangeTesting :
     
     subF = subL = subR = scans = scan_fore = scan_left = scan_rear = scan_right = tuple()
-    regions = {}
+    regions = regions_angles = {}
     target_acquired = False
     orientation = list()
     target = 0 # degrees to be applied to yaw
@@ -107,6 +110,15 @@ class LaserRangeTesting :
         self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         yaw_degrees = (yaw) * math.pi/180
         # rospy.loginfo("Yaw in degress: %s", yaw_degrees)
+
+    def callbckRegionsAngle(self, anglesArray) :
+        for regionAngles in anglesArray.angles :
+            self.regions_angles[regionAngles.region] = {
+                'angles' : regionAngles.angles
+            }
+            # rospy.loginfo("processing: %s",regionAngles.region)
+        # rospy.loginfo(self.regions_angles)
+
 
     def callbackScansFreespace(self, msg) :
         # rospy.loginfo(msg)
@@ -376,21 +388,7 @@ class LaserRangeTesting :
             index += 1
 
     def pidTest(self) :
-        # data = (50, 40, 36, 15, 25)
-        # for index, value in enumerate(data) :
-        #     # if index == 0 :
-        #     #     prevIndex = 0
-        #     # else :
-        #     #     prevIndex = data[index-1]
-        #     error = data[index] - self.pid_setpoint
-        #     rospy.loginfo("Error[%s - %s]: %s",data[index], self.pid_setpoint, error)
-        # exit()
         move = Twist()
-
-        rospy.loginfo( self.regions['starboard']['bow']['end'] )
-        rospy.loginfo( self.regions['starboard']['abeam_bow']['region'][0] )
-        rospy.loginfo( self.regions['starboard']['abeam_aft']['region'][-1] )
-        # exit()
 
         pid = PID(0.3, 0.3, 0.0, 1.5)
         longest_distance_x = self.regions['starboard']['abeam_bow']['region'][0]
@@ -410,20 +408,27 @@ class LaserRangeTesting :
 
             pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
             pub.publish( move )
-        else :
-            rospy.logwarn("Turning [+]")
-            # move.angular.z += 0.2
-            self.target = 0
-            self.quaternions_to_euler_angles()
+        # else :
+        #     rospy.logwarn("Turning [+]")
+        #     # self.target = 0
+        #     # self.quaternions_to_euler_angles()
+        #     if not np.isclose(self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1]) :
+        #         rospy.logerr("TARGET HIT!")
+        #         exit()
+        # move.angular.z += 0.2
+        # pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        # pub.publish( move )
+
+
         rospy.loginfo("-----------------------------------------------------------------------------")
 
     def getAngle(self) :
-        rospy.loginfo( self.regions['starboard']['bow']['end'] )
-        x = self.regions['starboard']['abeam_bow']['region'][0]
-        y = self.regions['starboard']['abeam_aft']['region'][-1]
-        z = 0
-        rospy.loginfo( x )
-        rospy.loginfo( y )
+        # rospy.loginfo( self.regions['starboard']['bow']['end'] )
+        # x = self.regions['starboard']['abeam_bow']['region'][0]
+        # y = self.regions['starboard']['abeam_aft']['region'][-1]
+        # z = 0
+        # rospy.loginfo( x )
+        # rospy.loginfo( y )
         # # rospy.loginfo( "TAN [1]: %s", math.tan(x/y) )
         # rospy.loginfo( "TAN Degrees: %s", math.degrees(math.tan(x/y)) )
         # # rospy.loginfo( "TAN [2]: %s", math.tan(y/x) )
@@ -442,17 +447,36 @@ class LaserRangeTesting :
         # rospy.loginfo( "COS Degrees: %s", math.degrees(math.cos(y/x)) )
         # rospy.loginfo("-----------------------------------------------------------------------------")
 
-        z = math.sqrt(x**2 + y**2)
-        xd = math.asin(x/z) * 180/math.pi
-        yd = math.asin(y/z) * 180/math.pi
-        rospy.loginfo(xd)
-        rospy.loginfo(yd)
-        rospy.loginfo("Rounded xd: %s", round(xd, 1))
-        rospy.loginfo("Rounded yd: %s", round(yd, 1))
+        # z = math.sqrt(x**2 + y**2)
+        # xd = math.asin(x/z) * 180/math.pi
+        # yd = math.asin(y/z) * 180/math.pi
+        # rospy.loginfo(xd)
+        # rospy.loginfo(yd)
+        # rospy.loginfo("Rounded xd: %s", round(xd, 1))
+        # rospy.loginfo("Rounded yd: %s", round(yd, 1))
         rospy.loginfo("-----------------------------------------------------------------------------")
+        rospy.loginfo(self.regions_angles['starboard_abeam_aft']['angles'][0])
 
     def parallelize(self) :
-        exit()
+            # angles: [45.36971664428711, 44.63028335571289]
+                # angles: [40.730220794677734, 49.269779205322266]
+
+        # rospy.loginfo( self.regions_angles['starboard_abeam']['angles'][0] )
+        # rospy.loginfo( self.regions_angles['starboard_abeam']['angles'][1] )
+        # rospy.loginfo("[%s] <> [%s]: %s", self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1], np.isclose(self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1]))
+        # if np.isclose(self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1], 0.75) :
+        #     rospy.logerr("TARGET HIT!")
+        #     # exit()
+        # rospy.loginfo( np.isclose([self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1]], 10.0, False) )
+        v1 = self.regions_angles['starboard_abeam']['angles'][0]
+        v2 = self.regions_angles['starboard_abeam']['angles'][1]
+        rospy.loginfo( "Status: %s, Values: [%s <> %s]", self.isclose(v1, v2), v1, v2 )
+        if self.isclose(v1, v2, 0.1) and v1 != 0 and v2 != 0 :
+            rospy.logwarn( "Status: %s, Values: [%s <> %s]", self.isclose(v1, v2), v1, v2 )
+
+    def isclose(self, a, b, rel_tol=1e-09, abs_tol=0.0):
+        return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
 
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
@@ -549,6 +573,7 @@ if __name__ == "__main__" :
     # rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
     # rospy.Subscriber('/scan_center', LaserScan, rangeTester.callbackScans)
     rospy.Subscriber('/scans_freespace', SpaceArray, rangeTester.callbackScansFreespace)
+    rospy.Subscriber('/sweepbot/regions_angles', AnglesArray, rangeTester.callbckRegionsAngle)
     rospy.Subscriber('/scans', LaserScan, rangeTester.callbackScans)
     rospy.Subscriber('/odom', Odometry, rangeTester.callbackOdom)
     rangeTester.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)

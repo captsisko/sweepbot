@@ -12,13 +12,12 @@ class Angles :
 
     def __init__(self) :
         rospy.loginfo('initiating angles publishing')
-        # rospy.Subscriber("scans", LaserScan, self.callbackScans)
         self.scans = ()
         self.regions = {}
         self.openspace_index = 0
         self.publisher = self.subscriber = ''
         self.index = 0
-        
+
     def callbackScans(self, data) :
         self.scans = data.ranges
         self.regions = {
@@ -30,8 +29,8 @@ class Angles :
             'port_abeam_bow' : self.scans[679:814],
             'port_abeam_aft' : self.scans[814:949],
             'port_aft' : self.scans[949:1084],
-            'starboard_abeam_unified' : self.scans[136:407],
-            'port_abeam_unified' : self.scans[679:949],
+            'starboard_abeam' : self.scans[136:407],
+            'port_abeam' : self.scans[679:949],
         }
 
     def publish(self) :
@@ -39,18 +38,9 @@ class Angles :
 
         for region in self.regions :
 
-            # rospy.loginfo("length_1: %s", self.scans[407])
-            # rospy.loginfo("length_2: %s", self.scans[136])
-
-        #     rospy.loginfo("Chcking: %s", region)
-        # exit()
-
             angleArray = AngleArray()
             angleArray.region = region
             
-            # if self.regions[region][0] == 26.0 or self.regions[region][-1] == 26.0 :
-            #     alpha = delta = 0
-
             length_1 = self.regions[region][0]
             length_2 = self.regions[region][-1]
 
@@ -58,65 +48,21 @@ class Angles :
             alpha = 0 if self.regions[region][0] == 26.0 else math.asin(length_1/hypo) * 180/math.pi
             delta = 0 if self.regions[region][-1] == 26.0 else math.asin(length_2/hypo) * 180/math.pi
 
-            angleArray.angle.insert(0, Angle( alpha ) )
-            angleArray.angle.insert(1, Angle( delta ) )
+            angleArray.angles.insert(0, alpha )
+            angleArray.angles.insert(1, delta )
+            if region == 'starboard_abeam' or region == 'port_abeam' :
+                if self.isclose(alpha, delta, 0.1) and alpha != 0 and delta != 0 :
+                    angleArray.parallel = True
 
             anglesArray.angles.append(angleArray)
             
-        rospy.loginfo('------------------------')
-        rospy.loginfo(anglesArray)
-        rospy.loginfo('------------------------')
-        # publisher.publish( anglesArray )
-        # exit()
+        # rospy.loginfo('------------------------')
+        # rospy.loginfo(anglesArray)
+        # rospy.loginfo('------------------------')
+        publisher.publish( anglesArray )
 
-
-    def getOpenAirPort(self) :
-        # 'port_aft' : self.scans[949:1084],
-        # 'port_abeam_aft' : self.scans[814:949],
-        # 'port_abeam_bow' : self.scans[679:814],
-        # 'port_bow' : self.scans[544:679],
-
-        arr = self.scans[544:1084]
-        for index, value in enumerate(arr) :
-            if value == 26.0 :
-                j = index
-                space = []
-                for j in range(0, 5) :
-                    try :
-                        if arr[index + j] == 26.0 :
-                            space.append(True)
-                        else :
-                            space.append(False)
-                            j += 1
-                    except Exception as e :
-                        rospy.logerr('Exception in j-level space checking - Region: ')
-                if space.count(True) == 5 and False not in space :
-                    return index
-        return False
-    
-    def getOpenAirStarboard(self) :
-        # 'starboard_aft' : self.scans[0:135],
-        # 'starboard_abeam_aft' : self.scans[136:271],
-        # 'starboard_abeam_bow' : self.scans[272:407],
-        # 'starboard_bow' : self.scans[408:543],
-
-        arr = self.scans[0:543]
-        for index, value in enumerate(arr) :
-            if value == 26.0 :
-                j = index
-                space = []
-                for j in range(0, 5) :
-                    try :
-                        if arr[index + j] == 26.0 :
-                            space.append(True)
-                        else :
-                            space.append(False)
-                            j += 1
-                    except Exception as e :
-                        rospy.logerr('Exception in j-level space checking - Region: ')
-                if space.count(True) == 5 and False not in space :
-                    return index
-        return False
+    def isclose(self, a, b, rel_tol=1e-09, abs_tol=0.0):
+        return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
     
 if __name__ == '__main__' :
     rospy.init_node('sweeper_regions_angles')
