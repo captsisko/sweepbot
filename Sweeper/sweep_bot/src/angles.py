@@ -30,6 +30,8 @@ class Angles :
             'port_abeam_bow' : self.scans[679:814],
             'port_abeam_aft' : self.scans[814:949],
             'port_aft' : self.scans[949:1084],
+            'starboard_abeam_unified' : self.scans[136:407],
+            'port_abeam_unified' : self.scans[679:949],
         }
 
     def publish(self) :
@@ -37,17 +39,20 @@ class Angles :
 
         for region in self.regions :
 
+            # rospy.loginfo("length_1: %s", self.scans[407])
+            # rospy.loginfo("length_2: %s", self.scans[136])
+
+        #     rospy.loginfo("Chcking: %s", region)
+        # exit()
+
             angleArray = AngleArray()
             angleArray.region = region
             
-            if self.regions[region][0] == 26.0 or self.regions[region][-1] == 26.0 :
-                alpha = delta = 0
+            # if self.regions[region][0] == 26.0 or self.regions[region][-1] == 26.0 :
+            #     alpha = delta = 0
 
             length_1 = self.regions[region][0]
             length_2 = self.regions[region][-1]
-
-            # rospy.loginfo("length_1: %s", length_1)
-            # rospy.loginfo("length_2: %s", length_2)
 
             hypo = math.sqrt(length_1**2 + length_2**2)
             alpha = 0 if self.regions[region][0] == 26.0 else math.asin(length_1/hypo) * 180/math.pi
