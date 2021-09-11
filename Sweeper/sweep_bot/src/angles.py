@@ -40,19 +40,19 @@ class Angles :
             angleArray = AngleArray()
             angleArray.region = region
             
-            if self.regions[region][0] == 26.0 and self.regions[region][-1] == 26.0 :
+            if self.regions[region][0] == 26.0 or self.regions[region][-1] == 26.0 :
                 alpha = delta = 0
-            else :
-                length_1 = self.regions[region][0]
-                length_2 = self.regions[region][-1]
 
-                # rospy.loginfo("length_1: %s", length_1)
-                # rospy.loginfo("length_2: %s", length_2)
+            length_1 = self.regions[region][0]
+            length_2 = self.regions[region][-1]
 
-                hypo = math.sqrt(length_1**2 + length_2**2)
-                alpha = math.asin(length_1/hypo) * 180/math.pi
-                delta = math.asin(length_2/hypo) * 180/math.pi
-            
+            # rospy.loginfo("length_1: %s", length_1)
+            # rospy.loginfo("length_2: %s", length_2)
+
+            hypo = math.sqrt(length_1**2 + length_2**2)
+            alpha = 0 if self.regions[region][0] == 26.0 else math.asin(length_1/hypo) * 180/math.pi
+            delta = 0 if self.regions[region][-1] == 26.0 else math.asin(length_2/hypo) * 180/math.pi
+
             angleArray.angle.insert(0, Angle( alpha ) )
             angleArray.angle.insert(1, Angle( delta ) )
 
