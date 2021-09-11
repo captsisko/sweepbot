@@ -56,6 +56,9 @@ add_message_files(
   FILES
   Space.msg
   SpaceArray.msg
+  Angle.msg
+  AngleArray.msg
+  AnglesArray.msg
 #   Message2.msg
 )
 

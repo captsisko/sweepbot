@@ -392,12 +392,12 @@ class LaserRangeTesting :
         rospy.loginfo( self.regions['starboard']['abeam_aft']['region'][-1] )
         # exit()
 
-        pid = PID(0.03, 0.0, 0.0, 1.5)
+        pid = PID(0.3, 0.3, 0.0, 1.5)
         longest_distance_x = self.regions['starboard']['abeam_bow']['region'][0]
         pid_longest_distance_x = round( pid(longest_distance_x), 2 )
         rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
 
-        pid = PID(0.009, 0.0, 0.0, 1.5)
+        pid = PID(0.1, 0.1, 0.0, 1.5)
         longest_distance_z = self.regions['starboard']['abeam_aft']['region'][-1]
         pid_longest_distance_z = round( pid(longest_distance_z), 2 )
         rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
@@ -406,14 +406,53 @@ class LaserRangeTesting :
             move.linear.x = pid_longest_distance_x * -1
             move.angular.z -= pid_longest_distance_z * -1
             rospy.logwarn("Turning [-]")
+            rospy.loginfo(move)
+
+            pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+            pub.publish( move )
         else :
             rospy.logwarn("Turning [+]")
-            move.angular.z += 0.2
+            # move.angular.z += 0.2
+            self.target = 0
+            self.quaternions_to_euler_angles()
         rospy.loginfo("-----------------------------------------------------------------------------")
-        rospy.loginfo(move)
 
-        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        pub.publish( move )
+    def getAngle(self) :
+        rospy.loginfo( self.regions['starboard']['bow']['end'] )
+        x = self.regions['starboard']['abeam_bow']['region'][0]
+        y = self.regions['starboard']['abeam_aft']['region'][-1]
+        z = 0
+        rospy.loginfo( x )
+        rospy.loginfo( y )
+        # # rospy.loginfo( "TAN [1]: %s", math.tan(x/y) )
+        # rospy.loginfo( "TAN Degrees: %s", math.degrees(math.tan(x/y)) )
+        # # rospy.loginfo( "TAN [2]: %s", math.tan(y/x) )
+        # rospy.loginfo( "TAN Degrees: %s", math.degrees(math.tan(y/x)) )
+        # rospy.loginfo("-----------------------------------------------------------------------------")
+        
+        # # rospy.loginfo( "SIN [1]: %s", math.sin(x/y) )
+        # rospy.loginfo( "SIN Degrees: %s", math.degrees(math.sin(x/y)) )
+        # # rospy.loginfo( "SIN [2]: %s", math.sin(y/x) )
+        # rospy.loginfo( "SIN Degrees: %s", math.degrees(math.sin(y/x)) )
+        # rospy.loginfo("-----------------------------------------------------------------------------")
+        
+        # # rospy.loginfo( "COS [1]: %s", math.cos(x/y) )
+        # rospy.loginfo( "COS Degrees: %s", math.degrees(math.cos(x/y)) )
+        # # rospy.loginfo( "COS [2]: %s", math.cos(y/x) )
+        # rospy.loginfo( "COS Degrees: %s", math.degrees(math.cos(y/x)) )
+        # rospy.loginfo("-----------------------------------------------------------------------------")
+
+        z = math.sqrt(x**2 + y**2)
+        xd = math.asin(x/z) * 180/math.pi
+        yd = math.asin(y/z) * 180/math.pi
+        rospy.loginfo(xd)
+        rospy.loginfo(yd)
+        rospy.loginfo("Rounded xd: %s", round(xd, 1))
+        rospy.loginfo("Rounded yd: %s", round(yd, 1))
+        rospy.loginfo("-----------------------------------------------------------------------------")
+
+    def parallelize(self) :
+        exit()
 
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
@@ -449,6 +488,10 @@ if __name__ == "__main__" :
         section = section_args.split('=')[1]
         rospy.loginfo('CHECKING : %s', section)
         angles = True
+
+    getAngle = False
+    if "getAngle" in str(sys.argv) :
+        getAngle = True
 
     distance = False
     direction = ''
@@ -497,6 +540,10 @@ if __name__ == "__main__" :
         # rospy.loginfo('CHECKING MID-VALUE RANGE : %s', laserReadings)
         pid = True
 
+    parallel = False
+    if "parallel" in str(sys.argv) :
+        parallel = True
+
     # rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
     # rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
     # rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
@@ -540,6 +587,10 @@ if __name__ == "__main__" :
                 rangeTester.laserReadings(laserReadings)
             if pid :
                 rangeTester.pidTest()
+            if getAngle :
+                rangeTester.getAngle()
+            if parallel :
+                rangeTester.parallelize()
         else :
             # rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
             rospy.loginfo("rangeTester.scans: %s", rangeTester.scans)
