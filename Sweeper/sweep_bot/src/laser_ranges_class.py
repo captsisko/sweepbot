@@ -73,26 +73,10 @@ class LaserRangeTesting :
         # }
         self.regions = {
             'starboard' : {
-                'bow' : {
-                    'start' : 0, 
-                    'end' : -45,
-                    'region' : self.scans[408:543]
-                },
-                'abeam_bow' : {
-                    'start' : -45, 
-                    'end' :  -90,
-                    'region' : self.scans[272:407]
-                },
-                'abeam_aft' : {
-                    'start' : -90, 
-                    'end' : -135,
-                    'region' : self.scans[136:271]
-                },
-                'aft' : {
-                    'start' : -135, 
-                    'end' : -180,
-                    'region' : self.scans[0:135]
-                },
+                'bow' : self.scans[408:543],
+                'abeam_bow' : self.scans[272:407],
+                'abeam_aft' : self.scans[136:271],
+                'aft' : self.scans[0:135],
             },
             'port'  :   {
                 'bow' : self.scans[544:679],
@@ -388,7 +372,7 @@ class LaserRangeTesting :
             rospy.loginfo("Index: %s ===>>> Value: %s", index, value)
             index += 1
 
-    def pidTest(self) :
+    def pidTurn(self) :
         move = Twist()
 
         pid = PID(0.3, 0.3, 0.0, 1.5)
@@ -422,6 +406,23 @@ class LaserRangeTesting :
 
 
         rospy.loginfo("-----------------------------------------------------------------------------")
+
+    def pidLine(self) :
+        # self.regions = {
+        #     'starboard' : {
+        #         'bow' : self.scans[408:543],
+        #         'abeam_bow' : self.scans[272:407],
+        #         'abeam_aft' : self.scans[136:271],
+        #         'aft' : self.scans[0:135],
+        #     },
+        #     'port'  :   {
+        #         'bow' : self.scans[544:679],
+        #         'abeam_bow' : self.scans[679:814],
+        #         'abeam_aft' : self.scans[814:949],
+        #         'aft' : self.scans[949:1084],
+        #     }
+        # }
+        rospy.logwarn( self.regions['starboard']['abeam_aft'][-1] )
 
     def getAngle(self) :
         # rospy.loginfo( self.regions['starboard']['bow']['end'] )
@@ -556,15 +557,15 @@ if __name__ == "__main__" :
     if "laserReadings=" in str(sys.argv) :
         laserReadings_args = sys.argv[1]
         laserReadings = laserReadings_args.split('=')[1]
-        # rospy.loginfo('CHECKING MID-VALUE RANGE : %s', laserReadings)
         laserReadingsDetected = True
 
-    pid = False
+    pid_turn = False
+    if "pidTurn" in str(sys.argv) :
+        pid_turn = True
+
+    pid_line = False
     if "pid" in str(sys.argv) :
-        # pid_args = sys.argv[1]
-        # pid = pid_args.split('=')[1]
-        # rospy.loginfo('CHECKING MID-VALUE RANGE : %s', laserReadings)
-        pid = True
+        pid_line = True
 
     parallel = False
     if "parallel" in str(sys.argv) :
@@ -612,8 +613,10 @@ if __name__ == "__main__" :
                 rangeTester.msg_test()
             if laserReadingsDetected :
                 rangeTester.laserReadings(laserReadings)
-            if pid :
-                rangeTester.pidTest()
+            if pid_turn :
+                rangeTester.pidTurn()
+            if pid_line :
+                rangeTester.pidLine()
             if getAngle :
                 rangeTester.getAngle()
             if parallel :
