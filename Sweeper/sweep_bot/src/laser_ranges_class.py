@@ -114,7 +114,8 @@ class LaserRangeTesting :
     def callbckRegionsAngle(self, anglesArray) :
         for regionAngles in anglesArray.angles :
             self.regions_angles[regionAngles.region] = {
-                'angles' : regionAngles.angles
+                'angles' : regionAngles.angles,
+                'parallel' : regionAngles.parallel
             }
             # rospy.loginfo("processing: %s",regionAngles.region)
         # rospy.loginfo(self.regions_angles)
@@ -456,6 +457,7 @@ class LaserRangeTesting :
         # rospy.loginfo("Rounded yd: %s", round(yd, 1))
         rospy.loginfo("-----------------------------------------------------------------------------")
         rospy.loginfo(self.regions_angles['starboard_abeam_aft']['angles'][0])
+        rospy.loginfo(self.regions_angles['starboard_abeam_aft']['parallel'])
 
     def parallelize(self) :
             # angles: [45.36971664428711, 44.63028335571289]

@@ -21,7 +21,11 @@ from sweep_bot.msg import Space
 from sweep_bot.msg import SpaceArray
 from sensor_msgs.msg import Imu
 from simple_pid import PID
+from sweep_bot.msg import AngleArray
+from sweep_bot.msg import AnglesArray
+
 class Tasker :
+    regions_angles = {}
 
     def __init__(self) :
         rospy.loginfo('Initializing ...')
@@ -107,6 +111,13 @@ class Tasker :
         (roll, pitch, yaw) = euler_from_quaternion(self.orientation)
         self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         yaw_degrees = (yaw) * math.pi/180
+
+    def callbckRegionsAngle(self, anglesArray) :
+        for regionAngles in anglesArray.angles :
+            self.regions_angles[regionAngles.region] = {
+                'angles' : regionAngles.angles,
+                'parallel' : regionAngles.parallel
+            }
 
     def callbackIMU(self, imu) :
         # rospy.loginfo( imu )
@@ -246,34 +257,43 @@ class Tasker :
 
     def turn_left(self) :
 
-        if self.gap == -1 :
-            self.gap = self.freespaces['port']
-            rospy.loginfo("GAP set to : %s", self.gap)
-            rospy.sleep(5)
+        # if self.gap == -1 :
+        #     self.gap = self.freespaces['port']
+        #     rospy.loginfo("GAP set to : %s", self.gap)
+        #     rospy.sleep(5)
 
         move = Twist()
 
         rospy.logerr('READY TO TURN LEFT')
 
-        self.gap = int(self.gap)
-        rospy.loginfo( "GAP: %s", self.gap )
-        target = self.getTargetAngle( self.gap )
-        rospy.loginfo("Moving to %s degrees", math.degrees(target))
+        rospy.loginfo( self.regions_angles['starboard_abeam'] )
 
-        if format(target, '.2f') == format(self.yaw, '.2f') :
-            move.angular.z = 0
-            rospy.logerr('Target Aqcuired!')
-            # self.target_acquired = True
-            if not self.clear_air() :
-                # rospy.logwarn('Non-Clean Air Ahead!')
-                self.sweeper_state = self.sweeper_states['TURNLEFT']
-                self.gap += 20
-            else :
-                # rospy.logwarn('Clean Air Ahead!')
-                self.change_state( self.sweeper_states['FOLLOWKERB'] )
+        if not self.regions_angles['starboard_abeam']['parallel'] :
+            move.angular.z = 1
         else :
-            move.angular.z = self.getRotationSpeed(target)
-            rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
+            rospy.logwarn('Robot is parallel to wall!')
+            self.change_state( self.sweeper_states['FOLLOWKERB'] )
+            move.angular.z = 0
+
+        # self.gap = int(self.gap)
+        # rospy.loginfo( "GAP: %s", self.gap )
+        # target = self.getTargetAngle( self.gap )
+        # rospy.loginfo("Moving to %s degrees", math.degrees(target))
+
+        # if format(target, '.2f') == format(self.yaw, '.2f') :
+        #     move.angular.z = 0
+        #     rospy.logerr('Target Aqcuired!')
+        #     # self.target_acquired = True
+        #     if not self.clear_air() :
+        #         # rospy.logwarn('Non-Clean Air Ahead!')
+        #         self.change_state( self.sweeper_states['TURNLEFT'] )
+        #         self.gap += 20
+        #     else :
+        #         # rospy.logwarn('Clean Air Ahead!')
+        #         self.change_state( self.sweeper_states['FOLLOWKERB'] )
+        # else :
+        #     move.angular.z = self.getRotationSpeed(target)
+            # rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
 
         return move
 
@@ -430,17 +450,18 @@ if __name__ == "__main__":
     if "debug" in str(sys.argv) :
         tasker.debugMode = True
 
+    rospy.Subscriber('/sweepbot/regions_angles', AnglesArray, tasker.callbckRegionsAngle)
     rospy.Subscriber('/scans_freespace', SpaceArray, tasker.callbackScansFreespace)
     rospy.Subscriber('/scans', LaserScan, tasker.callbackScans)
     rospy.Subscriber('/odom', Odometry, tasker.callbackOdometry)
     rospy.Subscriber('/imu', Imu, tasker.callbackIMU)
 
-    if "direction=left" in str(sys.argv) :
-        tasker.change_state( tasker.sweeper_states['TURNLEFT'] )
-    if "direction=follow" in str(sys.argv) :
-        tasker.change_state( tasker.sweeper_states['FOLLOWKERB'] )
-    else :
-        tasker.change_state( tasker.sweeper_states['LOCATE-RIGHT-WALL'] )
+    # if "left" in str(sys.argv) :
+    #     tasker.change_state( tasker.sweeper_states['TURNLEFT'] )
+    # if "follow" in str(sys.argv) :
+    #     tasker.change_state( tasker.sweeper_states['FOLLOWKERB'] )
+    # else :
+    #     tasker.change_state( tasker.sweeper_states['LOCATE-RIGHT-WALL'] )
 
     while not rospy.is_shutdown() :
         if tasker.lasers_engaged() :
