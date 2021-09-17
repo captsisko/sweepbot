@@ -23,9 +23,11 @@ from sensor_msgs.msg import Imu
 from simple_pid import PID
 from sweep_bot.msg import AngleArray
 from sweep_bot.msg import AnglesArray
+import settings as CONFIG
 
 class Tasker :
     regions_angles = {}
+    RANGE = 6.0
 
     def __init__(self) :
         rospy.loginfo('Initializing ...')
@@ -48,13 +50,7 @@ class Tasker :
         self.scans_fore = []
         # self.lasers_frontleft_merge = tuple()
         # self.lasers_frontright_merge = tuple()
-        self.sweeper_states = {
-            # 'PARK' : 0,
-            'LOCATE-RIGHT-WALL' : 1,
-            'FOLLOWKERB' : 3,
-            'TURNLEFT' : 2,
-            'DRIVE' : 4,
-        }
+        self.sweeper_states = CONFIG.STATES
         self.sweeper_move = Twist()
         self.debugMode = False
         self.median = -1000
@@ -129,17 +125,17 @@ class Tasker :
     #     self.change_state( self.sweeper_states['LOCATE-RIGHT-WALL'] )
     
     # Get rid of values outside the range of the lasers.
-    # In this case, the values of 26.0 exceeds the 25.0 
+    # In this case, the values of CONFIG.RANGE exceeds the 25.0 
     # laser limits and compromise the algorithm
     def clear_inf_values(self, set) :
-        return tuple( item for item in set if item != 26.0 )
+        return tuple( item for item in set if item != CONFIG.RANGE )
 
     def clean_set(self, set) :
         set_list = list(set)
-        occurances = set_list.count(26.0)
+        occurances = set_list.count(CONFIG.RANGE)
         # print('Occurances: %d' %(occurances))
-        while set_list.count(26.0) :
-            set_list.remove(26.0)
+        while set_list.count(CONFIG.RANGE) :
+            set_list.remove(CONFIG.RANGE)
         return tuple(set_list)
 
     def getMedian(self, range) :
@@ -148,7 +144,7 @@ class Tasker :
         # rospy.loginfo(indexes)
         indexes_length = len(indexes)
         indexes_midpoint = indexes_length / 2
-        # while self.scans[indexes_midpoint] == 26.0 :
+        # while self.scans[indexes_midpoint] == CONFIG.RANGE :
         #     indexes_midpoint -= 1
         return indexes_midpoint
         # **********************************************************
@@ -209,51 +205,80 @@ class Tasker :
         return self.kP * (angle - self.yaw)
 
     def clear_air(self) :
-        if self.regions['port_bow'][0] == 26.0 :
+        if self.regions['port_bow'][0] == CONFIG.RANGE :
             return True
         else :
             return False
         
+    # def locate_right_wall(self) :
+    #     move = Twist()
+
+    #     if self.median == -1000 :
+    #         self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
+    #     else :
+    #         rospy.loginfo( "Median: %s", self.median )
+    #         target = self.getTargetAngle(self.median)
+    #         rospy.loginfo("Moving to %s degrees", math.degrees(target))
+
+    #         if format(target, '.2f') == format(self.yaw, '.2f') :
+    #             move.angular.z = 0
+    #             rospy.logerr('Target Aqcuired!')
+    #             self.target_acquired = True
+    #             # exit()
+    #             # self.sweeper_state = self.sweeper_states['TURNLEFT']
+    #             self.change_state( self.sweeper_states['DRIVE'] )
+    #         else :
+    #             move.angular.z = self.getRotationSpeed(target)
+    #             rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
+
+    #     return move
+
     def locate_right_wall(self) :
         move = Twist()
 
-        if self.median == -1000 :
-            self.median = self.getMedian([136, 407]) #'starboard_abeam_aft', 'starboard_abeam_bow'
+        rospy.logwarn("Initiataing right wall seeking")
+
+        pid = PID(0.15, 0.3, 0.0, 1.5)
+        longest_distance_x = self.regions['starboard_abeam_bow'][0]
+        pid_longest_distance_x = round( pid(longest_distance_x), 2 )
+        rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
+
+        pid = PID(0.01, 0.1, 0.0, 1.5)
+        longest_distance_z = self.regions['starboard_abeam_aft'][-1]
+        pid_longest_distance_z = round( pid(longest_distance_z), 2 )
+        rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
+
+        if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
+            move.linear.x = pid_longest_distance_x * -1
+            move.angular.z -= pid_longest_distance_z * -1
+            rospy.loginfo(move)
         else :
-            rospy.loginfo( "Median: %s", self.median )
-            target = self.getTargetAngle(self.median)
-            rospy.loginfo("Moving to %s degrees", math.degrees(target))
-
-            if format(target, '.2f') == format(self.yaw, '.2f') :
-                move.angular.z = 0
-                rospy.logerr('Target Aqcuired!')
-                self.target_acquired = True
-                # exit()
-                # self.sweeper_state = self.sweeper_states['TURNLEFT']
-                self.change_state( self.sweeper_states['DRIVE'] )
-            else :
-                move.angular.z = self.getRotationSpeed(target)
-                rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
-
-        return move
-
-    def drive(self) :
-        move = Twist()
-
-        # 'starboard_bow' : self.scans[408:543],
-        # 'port_bow' : self.scans[544:679],
-         
-        midRanges = self.getMedianRange(11, [408, 679]) # 
-        midRangeAverage = self.getAverage(midRanges)
-
-        rospy.loginfo('[DRIVE]Average: %s', midRangeAverage)
-
-        if( midRangeAverage <= 1.5 ) :
+            rospy.logwarn("Terminating right wall seeking")
+            move.linear.x = 0
+            move.angular.z -= 0
+            
+            # self.change_state( self.sweeper_states['DRIVE'] )
             self.change_state( self.sweeper_states['TURNLEFT'] )
-        else :
-            move.linear.x = 0.5
 
         return move
+
+    # def drive(self) :
+    #     move = Twist()
+
+    #     # 'starboard_bow' : self.scans[408:543],
+    #     # 'port_bow' : self.scans[544:679],
+         
+    #     midRanges = self.getMedianRange(11, [408, 679]) # 
+    #     midRangeAverage = self.getAverage(midRanges)
+
+    #     rospy.loginfo('[DRIVE]Average: %s', midRangeAverage)
+
+    #     if( midRangeAverage <= 1.5 ) :
+    #         self.change_state( self.sweeper_states['TURNLEFT'] )
+    #     else :
+    #         move.linear.x = 0.5
+
+    #     return move
 
     def turn_left(self) :
 
@@ -271,7 +296,7 @@ class Tasker :
         if not self.regions_angles['starboard_abeam']['parallel'] :
             move.angular.z = 1
         else :
-            rospy.logwarn('Robot is parallel to wall!')
+            rospy.logwarn('Robot is now parallel to wall!')
             self.change_state( self.sweeper_states['FOLLOWKERB'] )
             move.angular.z = 0
 
@@ -469,8 +494,8 @@ if __name__ == "__main__":
             tasker.sweeper_move = Twist()
             if tasker.sweeper_state == tasker.sweeper_states['LOCATE-RIGHT-WALL'] : # 1 : 'locate right wall',
                 tasker.sweeper_move = tasker.locate_right_wall()
-            elif tasker.sweeper_state == tasker.sweeper_states['DRIVE'] : 
-                tasker.sweeper_move = tasker.drive() # drive straight
+            # elif tasker.sweeper_state == tasker.sweeper_states['DRIVE'] : 
+            #     tasker.sweeper_move = tasker.drive() # drive straight
             elif tasker.sweeper_state == tasker.sweeper_states['TURNLEFT'] : 
                 tasker.sweeper_move = tasker.turn_left() # turn-left ==> follow-kerb
             elif tasker.sweeper_state == tasker.sweeper_states['FOLLOWKERB'] : 

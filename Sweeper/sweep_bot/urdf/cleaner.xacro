@@ -63,9 +63,9 @@
     </visual>
     <collision>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-      <!-- <geometry>
+      <geometry>
         <box size="${chasis_length} ${chasis_width} ${chasis_heigth}"/>
-      </geometry> -->
+      </geometry>
     </collision>
   </link>
   <gazebo reference='chasis'>
@@ -88,14 +88,8 @@
   <!-- <xacro:overwatch_cam/> -->
   
   <!-- LASERS -->
-  <!-- <xacro:laser_top/> -->
-  <!-- <xacro:laser_front/> -->
-  <!-- <xacro:laser_left/> -->
-  <!-- <xacro:laser_right/> -->
   <xacro:laser_left_alt/>
   <xacro:laser_right_alt/>
-  <!-- <xacro:laser_center/> -->
-  <!-- <xacro:laser_rear/> -->
 
   <!-- SKIP STEERING -->
   <gazebo>

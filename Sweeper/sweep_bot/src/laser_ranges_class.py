@@ -18,8 +18,10 @@ from simple_pid import PID
 from sweep_bot.msg import Angle
 from sweep_bot.msg import AngleArray
 from sweep_bot.msg import AnglesArray
+import settings as CONFIG
 
 class LaserRangeTesting :
+    # RANGE = 6.0
     
     subF = subL = subR = scans = scan_fore = scan_left = scan_rear = scan_right = tuple()
     regions = regions_angles = {}
@@ -61,30 +63,33 @@ class LaserRangeTesting :
 
     def callbackScans(self, msg) :
         self.scans = msg.ranges
-        # self.regions = {
-        #     'starboard_aft' : self.scans[0:135],
-        #     'starboard_abeam_aft' : self.scans[136:271],
-        #     'starboard_abeam_bow' : self.scans[272:407],
-        #     'starboard_bow' : self.scans[408:543],
-        #     'port_aft' : self.scans[949:1084],
-        #     'port_abeam_aft' : self.scans[814:949],
-        #     'port_abeam_bow' : self.scans[679:814],
-        #     'port_bow' : self.scans[544:679],
-        # }
         self.regions = {
-            'starboard' : {
-                'bow' : self.scans[408:543],
-                'abeam_bow' : self.scans[272:407],
-                'abeam_aft' : self.scans[136:271],
-                'aft' : self.scans[0:135],
-            },
-            'port'  :   {
-                'bow' : self.scans[544:679],
-                'abeam_bow' : self.scans[679:814],
-                'abeam_aft' : self.scans[814:949],
-                'aft' : self.scans[949:1084],
-            }
+            'starboard_aft' : self.scans[0:135],
+            'starboard_abeam_aft' : self.scans[136:271],
+            'starboard_abeam_bow' : self.scans[272:407],
+            'starboard_bow' : self.scans[408:543],
+            'port_aft' : self.scans[949:1084],
+            'port_abeam_aft' : self.scans[814:949],
+            'port_abeam_bow' : self.scans[679:814],
+            'port_bow' : self.scans[544:679],
+            'starboard_abeam' : self.scans[136:407],
+            'port_abeam' : self.scans[679:949],
+            'bow' : self.scans[408:679],
         }
+        # self.regions = {
+        #     'starboard' : {
+        #         'bow' : self.scans[408:543],
+        #         'abeam_bow' : self.scans[272:407],
+        #         'abeam_aft' : self.scans[136:271],
+        #         'aft' : self.scans[0:135],
+        #     },
+        #     'port'  :   {
+        #         'bow' : self.scans[544:679],
+        #         'abeam_bow' : self.scans[679:814],
+        #         'abeam_aft' : self.scans[814:949],
+        #         'aft' : self.scans[949:1084],
+        #     }
+        # }
 
     def callbackOdom(self, odom) :
         orientation = odom.pose.pose.orientation
@@ -99,7 +104,9 @@ class LaserRangeTesting :
         for regionAngles in anglesArray.angles :
             self.regions_angles[regionAngles.region] = {
                 'angles' : regionAngles.angles,
-                'parallel' : regionAngles.parallel
+                'parallel' : regionAngles.parallel,
+                'mid_distance' : regionAngles.mid_distance,
+                'avg_distance' : regionAngles.avg_distance
             }
             # rospy.loginfo("processing: %s",regionAngles.region)
         # rospy.loginfo(self.regions_angles)
@@ -210,8 +217,13 @@ class LaserRangeTesting :
         rospy.loginfo("Scans size: %s", len(self.subF))
         rospy.loginfo("-----------------------------------------")
 
-    def printData(self) :
-        rospy.loginfo(self.subF)
+    def printData(self, section='all') :
+        rospy.loginfo('Printing section: %s', section)
+        if section == 'all' :
+            rospy.loginfo( self.regions )
+        else :
+            rospy.loginfo( self.regions[section] )
+        exit()
 
     def indexTester(self, start, end) :
         rospy.loginfo("Start: %s, End: %s", start, end)
@@ -245,7 +257,7 @@ class LaserRangeTesting :
         # exit()
 
     def clear_inf_values(self, set) :
-        return tuple( item for item in set if item != 26.0 )
+        return tuple( item for item in set if item != CONFIG.RANGE )
 
     def averaging(self, set) :
         # count = len(set)
@@ -306,9 +318,9 @@ class LaserRangeTesting :
         port_data = self.regions['port_bow'] + self.regions['port_abeam_bow'] + self.regions['port_abeam_aft'] + self.regions['port_aft']
 
         self.arr = port_data
-        # self.arr = (0.886091411113739, 26.0, 0.8820672631263733, 0.8699256777763367, 0.8702948689460754, 0.8681122064590454, 26.0, 26.0, 26.0, 26.0, 26.0, 0.7634991407394409, 0.7808852791786194, 0.7952740788459778, 26.0, 26.0, 26.0, 26.0, 26.0)
+        # self.arr = (0.886091411113739, CONFIG.RANGE, 0.8820672631263733, 0.8699256777763367, 0.8702948689460754, 0.8681122064590454, CONFIG.RANGE, CONFIG.RANGE, CONFIG.RANGE, CONFIG.RANGE, CONFIG.RANGE, 0.7634991407394409, 0.7808852791786194, 0.7952740788459778, CONFIG.RANGE, CONFIG.RANGE, CONFIG.RANGE, CONFIG.RANGE, CONFIG.RANGE)
 
-        match_index = self.arr.index(26.0, self.openspace_index)
+        match_index = self.arr.index(CONFIG.RANGE, self.openspace_index)
 
         space = []
         spaces = []
@@ -316,12 +328,12 @@ class LaserRangeTesting :
         for i in range( len(self.arr) ) :
             # rospy.loginfo("Comparing OpenSpace-Index: %s to Array Length: %s", i, len(self.arr)-1)
             # rospy.loginfo("%s ===>>> %s", i, self.arr[i])
-            if self.arr[i] == 26.0 :
+            if self.arr[i] == CONFIG.RANGE :
                 match_index = i
                 space = []
                 for j in range(0, 5) :
                     try :
-                        if self.arr[match_index + j] == 26.0 :
+                        if self.arr[match_index + j] == CONFIG.RANGE :
                             space.append(True)
                         else :
                             space.append(False)
@@ -372,16 +384,51 @@ class LaserRangeTesting :
             rospy.loginfo("Index: %s ===>>> Value: %s", index, value)
             index += 1
 
-    def pidTurn(self) :
+    def findrightwall(self) :
         move = Twist()
 
-        pid = PID(0.3, 0.3, 0.0, 1.5)
-        longest_distance_x = self.regions['starboard']['abeam_bow']['region'][0]
+        if self.regions['starboard_bow'][0] <= 1.5 :
+            rospy.loginfo("Found right wall")
+            move.linear.x = 0.0
+            move.angular.z -= 0.0
+            exit()
+
+        else :
+            rospy.loginfo("Finding right wall :")
+            move.linear.x = 0.3
+            move.angular.z -= 0.2
+
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        pub.publish( move )
+
+    def parallel_park(self) :
+        move = Twist()
+
+        if not self.regions_angles['starboard_abeam']['parallel'] :
+            rospy.logwarn("Driving to parallel . . .")
+            move.angular.z = 0.2
+        else :
+            rospy.logerr("Now parallel to wall")
+            move.angular.z -= 0.0
+            exit()
+
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        pub.publish( move )
+
+    def pidRight(self) :
+        rospy.loginfo("----------------- PROCESSING PID-RIGHT -----------------")
+
+        move = Twist()
+
+        rospy.logerr("TESTING: %s", CONFIG.RANGE)
+
+        pid = PID(0.15, 0.3, 0.0, 0)
+        longest_distance_x = self.regions['starboard_abeam_bow'][0]
         pid_longest_distance_x = round( pid(longest_distance_x), 2 )
         rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
 
-        pid = PID(0.1, 0.1, 0.0, 1.5)
-        longest_distance_z = self.regions['starboard']['abeam_aft']['region'][-1]
+        pid = PID(0.007, 0.1, 0.0, 0)
+        longest_distance_z = self.regions['starboard_abeam_aft'][-1]
         pid_longest_distance_z = round( pid(longest_distance_z), 2 )
         rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
 
@@ -393,36 +440,67 @@ class LaserRangeTesting :
 
             pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
             pub.publish( move )
-        # else :
-        #     rospy.logwarn("Turning [+]")
-        #     # self.target = 0
-        #     # self.quaternions_to_euler_angles()
-        #     if not np.isclose(self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1]) :
-        #         rospy.logerr("TARGET HIT!")
-        #         exit()
-        # move.angular.z += 0.2
-        # pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        # pub.publish( move )
+        else :
+            rospy.logwarn("Stopping ..... ")
+            move.linear.x = 0
+            move.angular.z -= 0
+
+            pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+            pub.publish( move )
+
+            exit()
+
+    def pidTurn(self) :
+
+        rospy.loginfo("----------------- PROCESSING PID-TURN -----------------")
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
 
-        rospy.loginfo("-----------------------------------------------------------------------------")
+        move = Twist()
+
+        rospy.loginfo("TESTING: %s", self.regions_angles['bow']['parallel'])
+        if not self.regions_angles['bow']['parallel'] :
+            move.angular.z -= 0.2
+        else :
+            move.angular.z = 0
+            rospy.logerr("STOP!!!")
+
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        pub.publish( move )
+
 
     def pidLine(self) :
-        # self.regions = {
-        #     'starboard' : {
-        #         'bow' : self.scans[408:543],
-        #         'abeam_bow' : self.scans[272:407],
-        #         'abeam_aft' : self.scans[136:271],
-        #         'aft' : self.scans[0:135],
-        #     },
-        #     'port'  :   {
-        #         'bow' : self.scans[544:679],
-        #         'abeam_bow' : self.scans[679:814],
-        #         'abeam_aft' : self.scans[814:949],
-        #         'aft' : self.scans[949:1084],
-        #     }
-        # }
-        rospy.logwarn( self.regions['starboard']['abeam_aft'][-1] )
+
+        rospy.loginfo("----------------- PROCESSING PID-LINE : %s", self.regions_angles['starboard_bow']['avg_distance'])
+
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        
+        distance_to_wall = self.regions_angles['starboard_bow']['avg_distance']
+        # if distance_to_wall < 1.0 :
+        set_point = 1.0
+        pid = PID(0.3, 0.0, 0.0, set_point)
+        pid_distance_to_wall = round( pid(distance_to_wall), 2 )
+        rospy.logwarn("Distance to wall: %s, PID: %s", distance_to_wall, pid_distance_to_wall)
+
+        move = Twist()
+        move.linear.x = 0.5
+
+        if distance_to_wall < 1.0 :
+            move.angular.z += pid_distance_to_wall
+            # move.angular.z += 0.5
+            rospy.loginfo("UNDER treshold. Turning LEFT")
+        else :
+            move.angular.z -= pid_distance_to_wall
+            # move.angular.z -= 0.5
+            rospy.loginfo("OVER treshold. Turning RIGHT")
+            # move.linear.x = 0
+            
+            pub.publish( move )
+
+
+    def __exit__(self, exc_type, exc_value, traceback) :
+        rospy.logwarn("Exiting ...")
+
 
     def getAngle(self) :
         # rospy.loginfo( self.regions['starboard']['bow']['end'] )
@@ -497,8 +575,17 @@ if __name__ == "__main__" :
     if "count" in str(sys.argv) :
         count = True
     printData = False
+    
     if "print" in str(sys.argv) :
+        print_args = sys.argv[1]
+        scans_region = 'all'
         printData = True
+    if "print=" in str(sys.argv) :
+        print_args = sys.argv[1]
+        scans_region = print_args.split('=')[1]
+        printData = True
+
+
     start = 0
     end = 0
     if "range=" in str(sys.argv) :
@@ -563,19 +650,31 @@ if __name__ == "__main__" :
     if "pidTurn" in str(sys.argv) :
         pid_turn = True
 
-    pid_line = False
-    if "pid" in str(sys.argv) :
-        pid_line = True
+    pidLine = False
+    if "pidLine" in str(sys.argv) :
+        pidLine = True
+
+    pidRight = False
+    if "pidRight" in str(sys.argv) :
+        pidRight = True
 
     parallel = False
     if "parallel" in str(sys.argv) :
         parallel = True
 
+    findrightwall = False
+    if "findrightwall" in str(sys.argv) :
+        findrightwall = True
+
+    parallel_park = False
+    if "parallel_park" in str(sys.argv) :
+        parallel_park = True
+
     # rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
     # rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
     # rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
     # rospy.Subscriber('/scan_center', LaserScan, rangeTester.callbackScans)
-    rospy.Subscriber('/scans_freespace', SpaceArray, rangeTester.callbackScansFreespace)
+    # rospy.Subscriber('/scans_freespace', SpaceArray, rangeTester.callbackScansFreespace)
     rospy.Subscriber('/sweepbot/regions_angles', AnglesArray, rangeTester.callbckRegionsAngle)
     rospy.Subscriber('/scans', LaserScan, rangeTester.callbackScans)
     rospy.Subscriber('/odom', Odometry, rangeTester.callbackOdom)
@@ -592,7 +691,7 @@ if __name__ == "__main__" :
             if count :
                 rangeTester.scansTest()
             if printData :
-                rangeTester.printData()
+                rangeTester.printData(scans_region)
             if target :
                 rangeTester.quaternions_to_euler_angles()
             # if range :
@@ -615,12 +714,19 @@ if __name__ == "__main__" :
                 rangeTester.laserReadings(laserReadings)
             if pid_turn :
                 rangeTester.pidTurn()
-            if pid_line :
+            if pidLine :
                 rangeTester.pidLine()
             if getAngle :
                 rangeTester.getAngle()
             if parallel :
                 rangeTester.parallelize()
+            if findrightwall :
+                rangeTester.findrightwall()
+            if parallel_park :
+                rangeTester.parallel_park()
+            if pidRight :
+                rangeTester.pidRight()
+
         else :
             # rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)
             rospy.loginfo("rangeTester.scans: %s", rangeTester.scans)

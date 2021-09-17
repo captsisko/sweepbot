@@ -7,8 +7,10 @@ from sweep_bot.msg import Angle
 from sweep_bot.msg import AngleArray
 from sweep_bot.msg import AnglesArray
 import numpy, math
+import settings as CONFIG
 
 class Angles :
+    RANGE = CONFIG.RANGE
 
     def __init__(self) :
         rospy.loginfo('initiating angles publishing')
@@ -31,6 +33,9 @@ class Angles :
             'port_aft' : self.scans[949:1084],
             'starboard_abeam' : self.scans[136:407],
             'port_abeam' : self.scans[679:949],
+            'bow' : self.scans[408:679],
+
+
         }
 
     def publish(self) :
@@ -45,14 +50,18 @@ class Angles :
             length_2 = self.regions[region][-1]
 
             hypo = math.sqrt(length_1**2 + length_2**2)
-            alpha = 0 if self.regions[region][0] == 26.0 else math.asin(length_1/hypo) * 180/math.pi
-            delta = 0 if self.regions[region][-1] == 26.0 else math.asin(length_2/hypo) * 180/math.pi
+            alpha = 0 if self.regions[region][0] == CONFIG.RANGE else math.asin(length_1/hypo) * 180/math.pi
+            delta = 0 if self.regions[region][-1] == CONFIG.RANGE else math.asin(length_2/hypo) * 180/math.pi
 
             angleArray.angles.insert(0, alpha )
             angleArray.angles.insert(1, delta )
-            if region == 'starboard_abeam' or region == 'port_abeam' :
-                if self.isclose(alpha, delta, 0.1) and alpha != 0 and delta != 0 :
-                    angleArray.parallel = True
+            # if region == 'starboard_abeam' or region == 'port_abeam' or 'bow':
+            if self.isclose(alpha, delta, 0.1) and alpha != 0 and delta != 0 :
+                angleArray.parallel = True
+
+            angleArray.mid_distance = self.regions[region][len(self.regions[region])/2]
+
+            angleArray.avg_distance = self.avrg( self.regions[region] )
 
             anglesArray.angles.append(angleArray)
             
@@ -63,6 +72,17 @@ class Angles :
 
     def isclose(self, a, b, rel_tol=1e-09, abs_tol=0.0):
         return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+    def clean_set(self, set) :
+        set_list = list(set)
+        occurances = set_list.count(CONFIG.RANGE)
+        # print('Occurances: %d' %(occurances))
+        while set_list.count(CONFIG.RANGE) :
+            set_list.remove(CONFIG.RANGE)
+        return tuple(set_list)
+
+    def avrg(self, values): # where values is a list of all values
+        return sum(self.clean_set(values)) / len(values)
     
 if __name__ == '__main__' :
     rospy.init_node('sweeper_regions_angles')

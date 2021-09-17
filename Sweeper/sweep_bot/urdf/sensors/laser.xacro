@@ -392,7 +392,7 @@
     <!-- ************************************************************** -->
 
     <!-- Hokuyo Laser - LEFT -->
-     <xacro:macro name="laser_left_alt">
+    <xacro:macro name="laser_left_alt">
         <gazebo reference="hokuyo_link_left">
             <sensor type="ray" name="head_hokuyo_sensor_left">
             <pose>0 0 0 0 0 0</pose>
@@ -409,7 +409,7 @@
                 </scan>
                 <range>
                     <min>0.10</min>
-                    <max>5.0</max>
+                    <max>2.5</max>
                     <resolution>0.05</resolution>
                 </range>
                 <noise>
@@ -448,7 +448,9 @@
         </link>
 
         <joint name="laser_joint_left" type="fixed">
-            <origin xyz="0.5 0.25 -0.2" rpy="0.0 0.01 ${3.14/2}"/>
+            <!-- <origin xyz="0.5 0.25 -0.2" rpy="0.0 0.01 ${3.14/2}"/> -->
+            <!-- <origin xyz="0.53 0.25 0.2" rpy="0.0 0.01 ${3.14/2}"/> -->
+            <origin xyz="0.56 0.28 0.2" rpy="0.0 0.0 ${3.14/2}"/>
             <parent link="chasis"/>
             <child link="hokuyo_link_left"/>
         </joint>
@@ -472,7 +474,7 @@
                 </scan>
                 <range>
                     <min>0.10</min>
-                    <max>5.0</max>
+                    <max>2.5</max>
                     <resolution>0.05</resolution>
                 </range>
                 <noise>
@@ -511,8 +513,9 @@
         </link>
 
         <joint name="laser_joint_right" type="fixed">
-            <origin xyz="-0.5 -0.25 -0.2" rpy="0 0.01 -${3.14/2}"/>
-            <!-- <origin xyz="-0.5 -0.25 0.3" rpy="0 0.01 -${3.14/2}"/> -->
+            <!-- <origin xyz="-0.5 -0.25 -0.2" rpy="0 0.01 -${3.14/2}"/> -->
+            <!-- <origin xyz="-0.53 -0.25 0.2" rpy="0.0 0.01 -${3.14/2}"/> -->
+            <origin xyz="-0.56 -0.28 0.2" rpy="0.0 0.0 -${3.14/2}"/>
             <parent link="chasis"/>
             <child link="hokuyo_link_right"/>
         </joint>

@@ -7,6 +7,7 @@ from sweep_bot.msg import Space
 from sweep_bot.msg import SpaceArray
 
 class FreeSpace :
+    RANGE = 13.0
 
     def __init__(self) :
         rospy.loginfo('initiating space publishing')
@@ -54,12 +55,12 @@ class FreeSpace :
 
         arr = self.scans[544:1084]
         for index, value in enumerate(arr) :
-            if value == 26.0 :
+            if value == self.RANGE :
                 j = index
                 space = []
                 for j in range(0, 5) :
                     try :
-                        if arr[index + j] == 26.0 :
+                        if arr[index + j] == self.RANGE :
                             space.append(True)
                         else :
                             space.append(False)
@@ -78,12 +79,12 @@ class FreeSpace :
 
         arr = self.scans[0:543]
         for index, value in enumerate(arr) :
-            if value == 26.0 :
+            if value == self.RANGE :
                 j = index
                 space = []
                 for j in range(0, 5) :
                     try :
-                        if arr[index + j] == 26.0 :
+                        if arr[index + j] == self.RANGE :
                             space.append(True)
                         else :
                             space.append(False)

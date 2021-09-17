@@ -5,11 +5,12 @@
     <!-- <include file="$(find sweep_bot)/launch/scan_merge.launch"/> -->
     <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
     
-    <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/>
+    <!-- <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/> -->
 
     <include file='$(find gazebo_ros)/launch/empty_world.launch'>
         <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/> -->
         <arg name="world_name" value='$(find sweep_bot)/worlds/wall_test_right.world'/>
+        <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_minimal_test.world'/> -->
     </include>
 
 
