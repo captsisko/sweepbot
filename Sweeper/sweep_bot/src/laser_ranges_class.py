@@ -471,31 +471,32 @@ class LaserRangeTesting :
 
     def pidLine(self) :
 
-        rospy.loginfo("----------------- PROCESSING PID-LINE : %s", self.regions_angles['starboard_bow']['avg_distance'])
+        # rospy.loginfo("----------------- PROCESSING PID-LINE : %s", self.regions_angles['starboard_abeam']['avg_distance'])
 
         pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         
-        distance_to_wall = self.regions_angles['starboard_bow']['avg_distance']
-        # if distance_to_wall < 1.0 :
+        distance_to_wall = self.regions_angles['starboard_abeam']['avg_distance']
+        # distance_to_wall = self.regions_angles['starboard_bow']['avg_distance']
         set_point = 1.0
-        pid = PID(0.3, 0.0, 0.0, set_point)
+        pid = PID(0.3, 0.1, 0.0, set_point)
         pid_distance_to_wall = round( pid(distance_to_wall), 2 )
-        rospy.logwarn("Distance to wall: %s, PID: %s", distance_to_wall, pid_distance_to_wall)
+        # rospy.logwarn("Distance to wall: %s, PID: %s", distance_to_wall, pid_distance_to_wall)
 
         move = Twist()
         move.linear.x = 0.5
 
-        if distance_to_wall < 1.0 :
-            move.angular.z += pid_distance_to_wall
-            # move.angular.z += 0.5
-            rospy.loginfo("UNDER treshold. Turning LEFT")
-        else :
-            move.angular.z -= pid_distance_to_wall
-            # move.angular.z -= 0.5
-            rospy.loginfo("OVER treshold. Turning RIGHT")
-            # move.linear.x = 0
+        if distance_to_wall < set_point :
             
-            pub.publish( move )
+            move.angular.z += pid_distance_to_wall
+            rospy.logwarn("%s <<<<< %s", distance_to_wall, pid_distance_to_wall)
+
+        else :
+
+            test = pid_distance_to_wall * -1
+            move.angular.z -= test
+            rospy.logerr("%s >>>>> %s", distance_to_wall, test)
+        
+        pub.publish( move )
 
 
     def __exit__(self, exc_type, exc_value, traceback) :
