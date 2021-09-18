@@ -34,8 +34,7 @@ class Angles :
             'starboard_abeam' : self.scans[136:407],
             'port_abeam' : self.scans[679:949],
             'bow' : self.scans[408:679],
-
-
+            'starboard' : self.scans[0:543],
         }
 
     def publish(self) :

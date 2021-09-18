@@ -37,6 +37,8 @@ class LaserRangeTesting :
     pid_kd = 2
     pid_loop = 0
     pub = ''
+    previous_distance_to_wall = 0
+    previous_distance_set = False
     
     def callbackFront(self, msg) :
         # rospy.logerr("Front Laser Data")
@@ -402,53 +404,91 @@ class LaserRangeTesting :
         pub.publish( move )
 
     def parallel_park(self) :
-        move = Twist()
 
         if not self.regions_angles['starboard_abeam']['parallel'] :
+            pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+            move = Twist()
             rospy.logwarn("Driving to parallel . . .")
             move.angular.z = 0.2
+            pub.publish( move )
         else :
             rospy.logerr("Now parallel to wall")
-            move.angular.z -= 0.0
-            exit()
+            # move.linear.x = 0.0
+            # move.angular.z = 0.0
+            # exit()
 
-        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        pub.publish( move )
+
+    # def pidRight(self) :
+    #     rospy.loginfo("----------------- PROCESSING PID-RIGHT : starboard_abeam_bow= %s", self.regions['starboard_abeam_bow'][0])
+
+    #     move = Twist()
+
+    #     rospy.logerr("TESTING: %s", CONFIG.RANGE)
+
+    #     if self.regions['starboard_abeam_bow'][0] == CONFIG.RANGE :
+    #         pid = PID(0.15, 0.3, 0.0, 1)
+    #         longest_distance_x = self.regions['starboard_abeam_bow'][0]
+    #         pid_longest_distance_x = round( pid(longest_distance_x), 2 )
+    #         rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
+
+    #         pid = PID(0.07, 0.1, 0.0, 1)
+    #         longest_distance_z = self.regions['starboard_abeam_aft'][-1]
+    #         pid_longest_distance_z = round( pid(longest_distance_z), 2 )
+    #         rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
+    #     else :
+    #         pid = PID(0.15, 0.3, 0.0, 0)
+    #         longest_distance_x = self.regions['starboard_abeam_bow'][0]
+    #         pid_longest_distance_x = round( pid(longest_distance_x), 2 )
+    #         rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
+
+    #         pid = PID(0.007, 0.1, 0.0, 0)
+    #         longest_distance_z = self.regions['starboard_abeam_aft'][-1]
+    #         pid_longest_distance_z = round( pid(longest_distance_z), 2 )
+    #         rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
+
+    #     if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
+    #         move.linear.x = pid_longest_distance_x * -1
+    #         move.angular.z -= pid_longest_distance_z * -1
+    #         rospy.logwarn("Turning [-]")
+    #         rospy.loginfo(move)
+
+    #         pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    #         pub.publish( move )
+    #     else :
+    #         rospy.logwarn("Stopping ..... ")
+    #         move.linear.x = 0
+    #         move.angular.z -= 0
+
+    #         pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    #         pub.publish( move )
+
+    #         exit()
 
     def pidRight(self) :
-        rospy.loginfo("----------------- PROCESSING PID-RIGHT -----------------")
+        # rospy.loginfo("----------------- PROCESSING PID-RIGHT : starboard_abeam_bow= %s", self.regions_angles['starboard']['avg_distance'])
 
         move = Twist()
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
-        rospy.logerr("TESTING: %s", CONFIG.RANGE)
+        distance_to_wall = self.regions_angles['starboard']['avg_distance']
+        pid = PID(0.5, 0.0, 0.0, 0.5)
+        pid_distance_to_wall = pid(distance_to_wall)
 
-        pid = PID(0.15, 0.3, 0.0, 0)
-        longest_distance_x = self.regions['starboard_abeam_bow'][0]
-        pid_longest_distance_x = round( pid(longest_distance_x), 2 )
-        rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
+        move.linear.x = 0.5
 
-        pid = PID(0.007, 0.1, 0.0, 0)
-        longest_distance_z = self.regions['starboard_abeam_aft'][-1]
-        pid_longest_distance_z = round( pid(longest_distance_z), 2 )
-        rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
+        if distance_to_wall < 1.0 :
+            move.angular.z -= pid_distance_to_wall
+            rospy.logerr("%s >>>>>", distance_to_wall)
 
-        if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
-            move.linear.x = pid_longest_distance_x * -1
-            move.angular.z -= pid_longest_distance_z * -1
-            rospy.logwarn("Turning [-]")
-            rospy.loginfo(move)
-
-            pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-            pub.publish( move )
-        else :
-            rospy.logwarn("Stopping ..... ")
-            move.linear.x = 0
-            move.angular.z -= 0
-
-            pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-            pub.publish( move )
-
+        if self.regions_angles['bow']['mid_distance'] < 1.0 :
+            # move.angular.z += pid_distance_to_wall
+            # rospy.logwarn("%s <<<<<", distance_to_wall)
+            # move.linear.x -= 0.5
+            self.parallel_park()
             exit()
+
+        rospy.loginfo(move)
+        pub.publish( move )
 
     def pidTurn(self) :
 
@@ -470,37 +510,38 @@ class LaserRangeTesting :
 
 
     def pidLine(self) :
-
-        # rospy.loginfo("----------------- PROCESSING PID-LINE : %s", self.regions_angles['starboard_abeam']['avg_distance'])
+        # rospy.loginfo("----------------- PROCESSING PID-LINE : %s", self.regions_angles['starboard']['avg_distance'])
 
         pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-        
-        distance_to_wall = self.regions_angles['starboard_abeam']['avg_distance']
-        # distance_to_wall = self.regions_angles['starboard_bow']['avg_distance']
-        set_point = 1.0
-        pid = PID(0.3, 0.1, 0.0, set_point)
-        pid_distance_to_wall = round( pid(distance_to_wall), 2 )
-        # rospy.logwarn("Distance to wall: %s, PID: %s", distance_to_wall, pid_distance_to_wall)
-
         move = Twist()
+        distance_to_wall = self.regions_angles['starboard_abeam']['mid_distance']
+        set_point = 1.0
+        pid = PID(0.1, 0.0, 0.0, set_point)
+        pid_distance_to_wall = pid( distance_to_wall)
+
+        if not self.previous_distance_set :
+            self.previous_distance_to_wall = distance_to_wall
+            self.previous_distance_set = True
+
         move.linear.x = 0.5
 
-        if distance_to_wall < set_point :
-            
-            move.angular.z += pid_distance_to_wall
-            rospy.logwarn("%s <<<<< %s", distance_to_wall, pid_distance_to_wall)
+        # rospy.loginfo("Comparing %s TO %s: %s", self.previous_distance_to_wall, distance_to_wall, self.isclose(self.previous_distance_to_wall, distance_to_wall, 0.1) )
 
-        else :
+        if self.isclose(self.previous_distance_to_wall, distance_to_wall, 0.1) :
+            if distance_to_wall > 1.0 :
+                rospy.logwarn("%s >>>>>", distance_to_wall)
+                move.angular.z -= pid_distance_to_wall * -1
+            else :
+                rospy.logerr("%s <<<<<", distance_to_wall)
+                move.angular.z += pid_distance_to_wall
 
-            test = pid_distance_to_wall * -1
-            move.angular.z -= test
-            rospy.logerr("%s >>>>> %s", distance_to_wall, test)
-        
-        pub.publish( move )
+            self.previous_distance_to_wall = distance_to_wall
+
+            pub.publish( move )
 
 
-    def __exit__(self, exc_type, exc_value, traceback) :
-        rospy.logwarn("Exiting ...")
+    def isclose(self, a, b, rel_tol=1e-09, abs_tol=0.0):
+        return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 
     def getAngle(self) :

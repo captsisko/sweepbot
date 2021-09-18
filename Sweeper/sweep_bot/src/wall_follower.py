@@ -112,7 +112,9 @@ class Tasker :
         for regionAngles in anglesArray.angles :
             self.regions_angles[regionAngles.region] = {
                 'angles' : regionAngles.angles,
-                'parallel' : regionAngles.parallel
+                'parallel' : regionAngles.parallel,
+                'mid_distance' : regionAngles.mid_distance,
+                'avg_distance' : regionAngles.avg_distance
             }
 
     def callbackIMU(self, imu) :
@@ -237,29 +239,44 @@ class Tasker :
         move = Twist()
 
         rospy.logwarn("Initiataing right wall seeking")
+        # ----------------------------------------------------------------------------------------
+        # pid = PID(0.15, 0.3, 0.0, 1.5)
+        # longest_distance_x = self.regions['starboard_abeam_bow'][0]
+        # pid_longest_distance_x = round( pid(longest_distance_x), 2 )
+        # rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
 
-        pid = PID(0.15, 0.3, 0.0, 1.5)
-        longest_distance_x = self.regions['starboard_abeam_bow'][0]
-        pid_longest_distance_x = round( pid(longest_distance_x), 2 )
-        rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
+        # pid = PID(0.01, 0.1, 0.0, 1.5)
+        # longest_distance_z = self.regions['starboard_abeam_aft'][-1]
+        # pid_longest_distance_z = round( pid(longest_distance_z), 2 )
+        # rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
 
-        pid = PID(0.01, 0.1, 0.0, 1.5)
-        longest_distance_z = self.regions['starboard_abeam_aft'][-1]
-        pid_longest_distance_z = round( pid(longest_distance_z), 2 )
-        rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
-
-        if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
-            move.linear.x = pid_longest_distance_x * -1
-            move.angular.z -= pid_longest_distance_z * -1
-            rospy.loginfo(move)
-        else :
-            rospy.logwarn("Terminating right wall seeking")
-            move.linear.x = 0
-            move.angular.z -= 0
+        # if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
+        #     move.linear.x = pid_longest_distance_x * -1
+        #     move.angular.z -= pid_longest_distance_z * -1
+        #     rospy.loginfo(move)
+        # else :
+        #     rospy.logwarn("Terminating right wall seeking")
+        #     move.linear.x = 0
+        #     move.angular.z -= 0
             
-            # self.change_state( self.sweeper_states['DRIVE'] )
-            self.change_state( self.sweeper_states['TURNLEFT'] )
+        #     # self.change_state( self.sweeper_states['DRIVE'] )
+        #     self.change_state( self.sweeper_states['TURNLEFT'] )
+        # ----------------------------------------------------------------------------------------
 
+        distance_to_wall = self.regions_angles['starboard']['avg_distance']
+        pid = PID(1.0, 0.0, 0.0, 0.5)
+        pid_distance_to_wall = pid(distance_to_wall)
+
+        move.linear.x = 0.5
+
+        if distance_to_wall < 1.0 :
+            move.angular.z -= pid_distance_to_wall
+            rospy.logerr("%s >>>>>", distance_to_wall)
+
+        if self.regions_angles['bow']['mid_distance'] < 1.5 :
+            self.change_state( self.sweeper_states['TURNLEFT'] )
+            move.linear.x = 0
+            move.angular.z = 0
         return move
 
     # def drive(self) :
@@ -325,105 +342,21 @@ class Tasker :
     def follow_kerb(self) :
         move = Twist()
 
-        # average_right_distance = self.getAverage( self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) )
-        # rospy.loginfo("MAX: %s", max(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft'])))
+        distance_to_wall = self.regions_angles['starboard']['avg_distance']
+        set_point = 1.5
+        pid = PID(0.3, 0.1, 0.0, set_point)
+        pid_distance_to_wall_z = round( pid(distance_to_wall), 2 )
 
-        # rospy.loginfo(self.imu['orientation'].x)
+        move = Twist()
+        move.linear.x = 0.5
 
-        # rounding = 8
-
-        # target = round( self.getTargetAngle( 360 - 90 ), rounding )
-        # rospy.loginfo("Moving to %s degrees", math.degrees(target))
-
-        # imu = round(self.imu['orientation'].orientation.x, rounding)
-        # yaw = round(self.yaw, rounding)
-
-        # if target == yaw :
-        #     move.angular.z = 0
-        #     rospy.logerr('Target Aqcuired!')
-        #     # self.target_acquired = True
-        #     # exit()
-        #     # self.sweeper_state = self.sweeper_states['TURNLEFT']
-        #     # self.change_state( self.sweeper_states['DRIVE'] )
-        # else :
-        #     move.angular.z = self.getRotationSpeed(target)
-        # rospy.loginfo('Target: %s, Yaw: %s, Imu: %s', target, yaw, imu)
-        # rospy.logwarn(self.imu['orientation'])
-        # yaw2 = self.yaw_from_euler_from_quaternion( self.imu['orientation'].orientation )
-        # rospy.logerr("Yaw-2: %s", yaw2)
-        # rospy.loginfo("-----------------------------------------------------------------------------")
-
-        # setpoint = 1
-        # longest_distance_1 = max(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']))
-        # longest_distance = max( self.clean_set(self.regions['starboard_bow']) + self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) + self.clean_set(self.regions['starboard_aft']) )
-        # # pid = PID(1, 0.1, 0.05, setpoint)
-        # pid = PID(0.0, 1.0, 2.0, setpoint)
-
-        # # pid_edge_distance = pid(average_right_distance)
-
-        # pid_data = round( pid(longest_distance), 2 )
-        # rospy.loginfo("PID: %s", pid_data)
-        # rospy.loginfo("Longest Distance - Mid Starboard: %s", longest_distance_1)
-        # rospy.loginfo("Longest Distance - Full Starboard: %s", longest_distance)
-
-        # # if pid_edge_distance < setpoint :
-        # # if pid_edge_distance < (setpoint*-1) :
-        # if longest_distance > 1 :
-        #     move.linear.x = 0.3
-        #     # move.angular.z -= 0.2
-        #     move.angular.z -= pid_data * -1
-        #     rospy.logwarn("Turning [-]")
-        #     # rospy.sleep(1)
-        # # elif pid_edge_distance < (setpoint*-1) :
-        # else :
-        #     rospy.logwarn("Turning [+]")
-        #     # move.linear.x = 0.3
-        #     move.angular.z += 0.2
-        #     # rospy.sleep(1)
-        # rospy.loginfo("-----------------------------------------------------------------------------")
-
-        # if test < 1 :
-        #     move.angular.z -= 0.1
-        #     rospy.logwarn("Turning [-]")
-        # else :
-        #     move.angular.z += 0.1
-        #     rospy.logwarn("Turning [+]")
-        
-        # rospy.loginfo( "starboard_abeam_bow length uncleaned: %s", len(self.regions['starboard_abeam_bow']) )
-        # rospy.loginfo( "starboard_abeam_aft length uncleaned: %s", len(self.regions['starboard_abeam_aft']) )
-        # rospy.loginfo( "Totalled uncleaned: %s", len(self.regions['starboard_abeam_bow'] + self.regions['starboard_abeam_aft']) )
-        # rospy.logwarn( "Average uncleaned: %s", self.getAverage(self.regions['starboard_abeam_bow'] + self.regions['starboard_abeam_aft']) )
-
-        # rospy.loginfo( "starboard_abeam_bow length cleaned: %s", len(self.clean_set(self.regions['starboard_abeam_bow'])) )
-        # rospy.loginfo( "starboard_abeam_aft length cleaned: %s", len(self.clean_set(self.regions['starboard_abeam_aft'])) )
-        # rospy.loginfo( "Totalled cleaned: %s", len(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft'])) )
-        # rospy.logwarn( "Average cleaned: %s", self.getAverage(self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft'])) )
-
-        # # rospy.loginfo("-----------------------------------------------------------------------------")
-        length = len( self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) )
-        data = numpy.sum( self.regions['starboard_abeam_bow'] + self.regions['starboard_abeam_aft'] )
-        rospy.logerr( "Average Experiment: %s", data/length )
-
-        average = self.getAverage( self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) )
-        average = self.getAverage( self.clean_set(self.regions['starboard_bow']) + self.clean_set(self.regions['starboard_abeam_bow']) + self.clean_set(self.regions['starboard_abeam_aft']) + self.clean_set(self.regions['starboard_aft']) )
-        # move.linear.x = 0.2
-        setpoint = 1
-        control = format(1.5 * (setpoint - average), '.2f')
-
-        rospy.logwarn("AVG: %s", average)
-        rospy.logerr("CONTROL: %s", control)
-        rospy.loginfo("DIFFERENCE: %s", setpoint - average)
-
-        if control == (setpoint*-1) :
-            rospy.loginfo("**************** %s ****************", control)
-
-        if control > setpoint :
-            move.angular.z -= 0.1
-            rospy.logwarn("Turning [-]")
+        if distance_to_wall < set_point :
+            move.angular.z += pid_distance_to_wall_z
+            rospy.logwarn("%s <<<<< %s", distance_to_wall, pid_distance_to_wall_z)
         else :
-            move.angular.z += 0.1
-            rospy.logwarn("Turning [+]")
-        rospy.loginfo("---------------------------------------")
+            move.angular.z -= pid_distance_to_wall_z * -1
+            rospy.logerr("%s >>>>> %s", distance_to_wall, pid_distance_to_wall_z * -1)
+        
         return move
 
     def change_state(self, previous_state) :

@@ -9,8 +9,8 @@
 
     <include file='$(find gazebo_ros)/launch/empty_world.launch'>
         <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/> -->
-        <arg name="world_name" value='$(find sweep_bot)/worlds/wall_test_right.world'/>
-        <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_minimal_test.world'/> -->
+        <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/wall_test_right.world'/> -->
+        <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_minimal_test.world'/>
     </include>
 
 
