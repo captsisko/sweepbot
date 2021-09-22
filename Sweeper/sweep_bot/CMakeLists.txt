@@ -59,6 +59,8 @@ add_message_files(
   AngleArray.msg
   AnglesArray.msg
 #   Message2.msg
+  Bow.msg
+  BowGrid.msg
 )
 
 ## Generate services in the 'srv' folder

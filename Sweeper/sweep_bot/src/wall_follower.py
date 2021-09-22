@@ -2,6 +2,7 @@
 
 # from pickle import TRUE
 # from yaml import serialize
+from pickle import FALSE, TRUE
 import rospy
 # from rospy.core import loginfo
 import math
@@ -27,7 +28,7 @@ import settings as CONFIG
 
 class Tasker :
     regions_angles = {}
-    RANGE = 6.0
+    maneuver_complete = False
 
     def __init__(self) :
         rospy.loginfo('Initializing ...')
@@ -238,7 +239,7 @@ class Tasker :
     def locate_right_wall(self) :
         move = Twist()
 
-        rospy.logwarn("Initiataing right wall seeking")
+        rospy.logwarn_once("Initiataing right wall seeking")
         # ----------------------------------------------------------------------------------------
         # pid = PID(0.15, 0.3, 0.0, 1.5)
         # longest_distance_x = self.regions['starboard_abeam_bow'][0]
@@ -263,20 +264,26 @@ class Tasker :
         #     self.change_state( self.sweeper_states['TURNLEFT'] )
         # ----------------------------------------------------------------------------------------
 
-        distance_to_wall = self.regions_angles['starboard']['avg_distance']
-        pid = PID(1.0, 0.0, 0.0, 0.5)
-        pid_distance_to_wall = pid(distance_to_wall)
+        distance_x = self.regions_angles['starboard']['mid_distance']
+        pid = PID(0.1, 0.3, 0.0, 1.0)
+        pid_distance_x = pid( distance_x )
 
-        move.linear.x = 0.5
+        distance_z = self.regions_angles['starboard']['mid_distance']
+        pid = PID(0.005, 0.1, 0.0, 1.0)
+        pid_distance_z = pid( distance_z )
 
-        if distance_to_wall < 1.0 :
-            move.angular.z -= pid_distance_to_wall
-            rospy.logerr("%s >>>>>", distance_to_wall)
+        move.linear.x = pid_distance_x * -1
+
+        if distance_z > 1.0 :
+            move.angular.z = pid_distance_z + -1
+            # rospy.logerr("%s >>>>>", distance_z)
 
         if self.regions_angles['bow']['mid_distance'] < 1.5 :
             self.change_state( self.sweeper_states['TURNLEFT'] )
             move.linear.x = 0
             move.angular.z = 0
+
+        rospy.logwarn_throttle(10, ". . . still seeking right wall")
         return move
 
     # def drive(self) :
@@ -299,64 +306,59 @@ class Tasker :
 
     def turn_left(self) :
 
-        # if self.gap == -1 :
-        #     self.gap = self.freespaces['port']
-        #     rospy.loginfo("GAP set to : %s", self.gap)
-        #     rospy.sleep(5)
-
+        rospy.logerr_once('Initiating LEFT-TURN')
         move = Twist()
 
-        rospy.logerr('READY TO TURN LEFT')
-
-        rospy.loginfo( self.regions_angles['starboard_abeam'] )
+        # if self.regions_angles['starboard_abeam']['angles'][0] < self.regions_angles['starboard_abeam']['angles'][1] :
+        #     direction = -1
+        # else :
+        #     direction = 1
 
         if not self.regions_angles['starboard_abeam']['parallel'] :
             move.angular.z = 1
+            # move.angular.z = direction
         else :
             rospy.logwarn('Robot is now parallel to wall!')
+            # rospy.sleep(1) # delaying because it immediately runs into wall. sample angle was 46, 44
+            # rospy.logwarn_once( self.regions_angles['starboard_abeam'] )
             self.change_state( self.sweeper_states['FOLLOWKERB'] )
             move.angular.z = 0
 
-        # self.gap = int(self.gap)
-        # rospy.loginfo( "GAP: %s", self.gap )
-        # target = self.getTargetAngle( self.gap )
-        # rospy.loginfo("Moving to %s degrees", math.degrees(target))
-
-        # if format(target, '.2f') == format(self.yaw, '.2f') :
-        #     move.angular.z = 0
-        #     rospy.logerr('Target Aqcuired!')
-        #     # self.target_acquired = True
-        #     if not self.clear_air() :
-        #         # rospy.logwarn('Non-Clean Air Ahead!')
-        #         self.change_state( self.sweeper_states['TURNLEFT'] )
-        #         self.gap += 20
-        #     else :
-        #         # rospy.logwarn('Clean Air Ahead!')
-        #         self.change_state( self.sweeper_states['FOLLOWKERB'] )
-        # else :
-        #     move.angular.z = self.getRotationSpeed(target)
-            # rospy.loginfo('Target: %s, Yaw: %s', target, self.yaw)
-
+        rospy.logerr_throttle(5, '... turning')
         return move
 
     def follow_kerb(self) :
+
         move = Twist()
 
-        distance_to_wall = self.regions_angles['starboard']['avg_distance']
-        set_point = 1.5
-        pid = PID(0.3, 0.1, 0.0, set_point)
+        # if not self.regions_angles['starboard_abeam']['parallel'] and not self.maneuver_complete :
+
+
+        # else :
+
+        # distance_to_wall = self.regions_angles['starboard']['mid_distance']
+        # set_point = 1.5
+        # pid = PID(0.3, 0.1, 0.0, set_point)
+        # pid_distance_to_wall_z = round( pid(distance_to_wall), 2 )
+
+
+        distance_to_wall = self.regions_angles['starboard']['mid_distance']
+        set_point = 1.0
+        pid = PID(0.1, 0.0, 0.0, set_point)
         pid_distance_to_wall_z = round( pid(distance_to_wall), 2 )
 
-        move = Twist()
         move.linear.x = 0.5
 
-        if distance_to_wall < set_point :
-            move.angular.z += pid_distance_to_wall_z
-            rospy.logwarn("%s <<<<< %s", distance_to_wall, pid_distance_to_wall_z)
-        else :
-            move.angular.z -= pid_distance_to_wall_z * -1
-            rospy.logerr("%s >>>>> %s", distance_to_wall, pid_distance_to_wall_z * -1)
-        
+        if distance_to_wall != 8.0 and CONFIG.isclose(distance_to_wall, set_point, 1.0) :
+    
+            if distance_to_wall > set_point :
+                move.angular.z -= pid_distance_to_wall_z
+                rospy.logwarn("%s >>>>> %s", distance_to_wall, pid_distance_to_wall_z)
+            else :
+                self.change_state( self.sweeper_states['TURNLEFT'] )
+                move.angular.z += pid_distance_to_wall_z * -1
+                rospy.logerr("%s <<<<< %s", distance_to_wall, pid_distance_to_wall_z * -1)
+
         return move
 
     def change_state(self, previous_state) :

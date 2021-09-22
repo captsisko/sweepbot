@@ -99,8 +99,10 @@ class LaserRangeTesting :
         (roll, pitch, yaw) = euler_from_quaternion(self.orientation)
         # rospy.logerr(yaw) # this yaw value is in radians NOT DEGREES with respect to the world coordinates
         self.yaw = yaw # this yaw value is in radians NOT DEGREES with respect to the world coordinates
-        yaw_degrees = (yaw) * math.pi/180
-        # rospy.loginfo("Yaw in degress: %s", yaw_degrees)
+        # yaw_degrees = (yaw) * math.pi/180
+        yaw_degrees = (yaw) * 180/math.pi
+        # rospy.loginfo("Yaw => Radians : [%s], Degress : [%s]", yaw, (yaw_degrees+90)*1)
+        # rospy.loginfo("Yaw => Degress : [%s]", yaw_degrees+90)
 
     def callbckRegionsAngle(self, anglesArray) :
         for regionAngles in anglesArray.angles :
@@ -517,7 +519,7 @@ class LaserRangeTesting :
         distance_to_wall = self.regions_angles['starboard_abeam']['mid_distance']
         set_point = 1.0
         pid = PID(0.1, 0.0, 0.0, set_point)
-        pid_distance_to_wall = pid( distance_to_wall)
+        pid_distance_to_wall = pid( distance_to_wall )
 
         if not self.previous_distance_set :
             self.previous_distance_to_wall = distance_to_wall
@@ -525,24 +527,42 @@ class LaserRangeTesting :
 
         move.linear.x = 0.5
 
-        # rospy.loginfo("Comparing %s TO %s: %s", self.previous_distance_to_wall, distance_to_wall, self.isclose(self.previous_distance_to_wall, distance_to_wall, 0.1) )
+        # rospy.loginfo("PID: %s, PID-Distance: %s", pid, pid_distance_to_wall)
+        # pid.tunings = (1.0, 0.2, 0.4)
+        # pid.setpoint = 0.5
 
-        if self.isclose(self.previous_distance_to_wall, distance_to_wall, 0.1) :
-            if distance_to_wall > 1.0 :
-                rospy.logwarn("%s >>>>>", distance_to_wall)
-                move.angular.z -= pid_distance_to_wall * -1
-            else :
-                rospy.logerr("%s <<<<<", distance_to_wall)
-                move.angular.z += pid_distance_to_wall
+        # rospy.loginfo("Value#1: %s, Value#2: %s", self.regions_angles['starboard_abeam']['angles'][0], self.regions_angles['starboard_abeam']['angles'][1] )
+        if not self.regions_angles['starboard_abeam']['parallel'] :
+            rospy.logwarn_once('Re-orienting!')        
+            pid = PID(0.1, 0.0, 0.0, 45.0)
+            pid_parallel_to_wall = pid( self.regions_angles['starboard_abeam']['angles'][0] )
+            rospy.loginfo("PID-Distance: %s", pid_parallel_to_wall)
 
-            self.previous_distance_to_wall = distance_to_wall
+            move.linear.x = 0
+            move.angular.z = 1.0
+        else :
+            # if not self.regions_angles['starboard_abeam']['parallel'] :
+            rospy.logerr("Should stop here ...")
+            # else :
+            move.angular.z = 0
+            #     rospy.logerr("Test#2")
 
-            pub.publish( move )
+        # else :
 
+        #     if self.isclose(self.previous_distance_to_wall, distance_to_wall, 0.1) :
+        #         if distance_to_wall > 1.0 :
+        #             rospy.logwarn("%s >>>>>", distance_to_wall)
+        #             move.angular.z -= pid_distance_to_wall * -1
+        #         else :
+        #             rospy.logerr("%s <<<<<", distance_to_wall)
+        #             move.angular.z += pid_distance_to_wall
+
+        #         self.previous_distance_to_wall = distance_to_wall
+
+        pub.publish( move )
 
     def isclose(self, a, b, rel_tol=1e-09, abs_tol=0.0):
         return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
-
 
     def getAngle(self) :
         # rospy.loginfo( self.regions['starboard']['bow']['end'] )
@@ -600,6 +620,35 @@ class LaserRangeTesting :
     def isclose(self, a, b, rel_tol=1e-09, abs_tol=0.0):
         return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
+    def getTargetAngle(self, point) :
+        return -3.14159274101 + (int(point) * 0.00579999992624)
+
+    def getRotationSpeed(self, angle) :
+        return self.kP * (angle - self.yaw)
+
+    def rotationTarget(self, angle) :
+        # target = self.getTargetAngle( angle )
+        target = int(angle) * math.pi / 180 # to radians
+        rospy.loginfo("Moving to %s degrees", math.degrees(target))
+        pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+
+        move = Twist()
+        # if round(target, 2) == round(self.yaw, 2) :
+        if self.isclose(target, self.yaw, 0.1) :
+            move.linear.x = 0
+            move.angular.z = 0
+            pub.publish( move )
+            rospy.logerr('Target Aqcuired!')
+            exit()
+        else :
+        #     move.angular.z = self.getRotationSpeed(target)
+            move.angular.z = self.getRotationSpeed(target)
+
+        pub.publish( move )
+
+    # def printBow(self) :
+    #     # rospy.loginfo(self.regions['bow'])
+    #     exit()
 
 if __name__ == "__main__" :
     rospy.init_node('laser_scan_values_2')
@@ -626,7 +675,6 @@ if __name__ == "__main__" :
         print_args = sys.argv[1]
         scans_region = print_args.split('=')[1]
         printData = True
-
 
     start = 0
     end = 0
@@ -712,6 +760,16 @@ if __name__ == "__main__" :
     if "parallel_park" in str(sys.argv) :
         parallel_park = True
 
+    rotateToTarget = False
+    if "rotateToTarget=" in str(sys.argv) :
+        rotateToTarget_args = sys.argv[1]
+        target_in_degrees = rotateToTarget_args.split('=')[1]
+        rotateToTarget = True
+
+    # printBow = False
+    # if "printBow" in str(sys.argv) :
+    #     printBow = True
+
     # rospy.Subscriber('/scan_front', LaserScan, rangeTester.callbackFront)
     # rospy.Subscriber('/scan_left', LaserScan, rangeTester.callbackLeft)
     # rospy.Subscriber('/scan_right', LaserScan, rangeTester.callbackRight)
@@ -768,6 +826,10 @@ if __name__ == "__main__" :
                 rangeTester.parallel_park()
             if pidRight :
                 rangeTester.pidRight()
+            if rotateToTarget :
+                rangeTester.rotationTarget(target_in_degrees)
+            # if printBow :
+            #     rangeTester.printBow()
 
         else :
             # rospy.loginfo("rangeTester.subR: %s, rangeTester.subFR: %s", rangeTester.subR, rangeTester.subF)

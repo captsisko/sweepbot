@@ -49,13 +49,13 @@ class Angles :
             length_2 = self.regions[region][-1]
 
             hypo = math.sqrt(length_1**2 + length_2**2)
-            alpha = 0 if self.regions[region][0] == CONFIG.RANGE else math.asin(length_1/hypo) * 180/math.pi
-            delta = 0 if self.regions[region][-1] == CONFIG.RANGE else math.asin(length_2/hypo) * 180/math.pi
+            alpha = 0 if self.regions[region][0] == CONFIG.MAX_RANGE else math.asin(length_1/hypo) * 180/math.pi
+            delta = 0 if self.regions[region][-1] == CONFIG.MAX_RANGE else math.asin(length_2/hypo) * 180/math.pi
 
             angleArray.angles.insert(0, alpha )
             angleArray.angles.insert(1, delta )
             # if region == 'starboard_abeam' or region == 'port_abeam' or 'bow':
-            if self.isclose(alpha, delta, 0.1) and alpha != 0 and delta != 0 :
+            if self.isclose(alpha, delta, 0.5) and alpha != 0 and delta != 0 :
                 angleArray.parallel = True
 
             angleArray.mid_distance = self.regions[region][len(self.regions[region])/2]
