@@ -241,45 +241,18 @@ class Tasker :
         move = Twist()
 
         rospy.logwarn_once("Initiataing right wall seeking")
-        # ----------------------------------------------------------------------------------------
-        # pid = PID(0.15, 0.3, 0.0, 1.5)
-        # longest_distance_x = self.regions['starboard_abeam_bow'][0]
-        # pid_longest_distance_x = round( pid(longest_distance_x), 2 )
-        # rospy.loginfo("Distance-X: %s, PID: %s", longest_distance_x, pid_longest_distance_x)
-
-        # pid = PID(0.01, 0.1, 0.0, 1.5)
-        # longest_distance_z = self.regions['starboard_abeam_aft'][-1]
-        # pid_longest_distance_z = round( pid(longest_distance_z), 2 )
-        # rospy.loginfo("Distance-Z: %s, PID: %s", longest_distance_z, pid_longest_distance_z)
-
-        # if longest_distance_x > 1.5 and longest_distance_z > 1.5 :
-        #     move.linear.x = pid_longest_distance_x * -1
-        #     move.angular.z -= pid_longest_distance_z * -1
-        #     rospy.loginfo(move)
-        # else :
-        #     rospy.logwarn("Terminating right wall seeking")
-        #     move.linear.x = 0
-        #     move.angular.z -= 0
-            
-        #     # self.change_state( self.sweeper_states['DRIVE'] )
-        #     self.change_state( self.sweeper_states['TURNLEFT'] )
-        # ----------------------------------------------------------------------------------------
 
         set_point = 1.0
         limit = 1.5
 
-        distance_x = self.regions_angles['starboard']['mid_distance']
-        # pid = PID(0.1, 0.3, 0.0, set_point)
+        distance_x = self.regions_angles[ CONFIG.starboard_active_section ]['mid_distance']
         pid = PID(0.12, 0.0, 0.0, set_point)
         pid_distance_x = pid( distance_x )
 
-        distance_z = self.regions_angles['starboard']['mid_distance']
-        # pid = PID(0.005, 0.1, 0.0, set_point)
-        # pid = PID(0.001, 0.0, 0.0, set_point)
+        distance_z = self.regions_angles[ CONFIG.starboard_active_section ]['mid_distance']
         pid = PID(0.1, 0.0, 0.0, set_point)
         pid_distance_z = pid( distance_z )
 
-        # move.linear.x = pid_distance_x * -1
         move.linear.x = abs(pid_distance_x)
         
         if distance_z > limit :
@@ -338,34 +311,52 @@ class Tasker :
 
         move = Twist()
 
+        # distance_ahead = self.regions_angles['bow']['avg_distance']
+        distance_ahead = self.regions_angles['starboard_bow']['mid_distance']
+        pid_ahead = PID(0.2, 0.3, 0.0, 6.0)
+        pid_distance_ahead = pid_ahead(distance_ahead)
+        # move.linear.x = 0.5
+        move.linear.x = pid_distance_ahead
+
         distance_to_wall = self.regions_angles[ CONFIG.starboard_active_section ]['mid_distance']
         set_point = 1.0
         limit = 1.0
         # pid = PID(0.3, 0.3, 0.0, set_point)
         # pid = PID(1.3, 1.5, 0.3, set_point)
         # pid = PID(1.3, 1.2, 0.3, set_point)
-        pid = PID(0.8, 1.2, 0.3, set_point)
-        pid_distance_to_wall_z = round( pid(distance_to_wall), 2 )
+        # pid = PID(0.8, 1.2, 0.3, set_point)
+        pid_wall = PID(0.8, 0.0, 0.0, set_point)
+        pid_distance_to_wall_z = pid_wall(distance_to_wall)
 
-        move.linear.x = 0.5
+        # if distance_to_wall != 8.0 and CONFIG.isclose(distance_to_wall, set_point, 1.0) and not int(self.previous_distance_to_wall) == 0 :
+        if distance_to_wall != 8.0 :
+            
+            # if self.previous_distance_to_wall == 0 :
+            #     self.previous_distance_to_wall = distance_to_wall
 
-        # rospy.loginfo("Distance-To-Wall: %s, isClose(distance-to-wall, setpoint, 1.0): %s", distance_to_wall, CONFIG.isclose(distance_to_wall, set_point, 1.0) )
-        if distance_to_wall != 8.0 and CONFIG.isclose(distance_to_wall, set_point, 1.0) :
+            #     # rospy.loginfo( "Plain: %s, INT: %s", self.previous_distance_to_wall, int(self.previous_distance_to_wall) )
 
-            # if not CONFIG.isclose(distance_to_wall, self.previous_distance_to_wall, 0.1) :
-            #     distance_to_wall = self.previous_distance_to_wall
-            #     rospy.loginfo("************* DISTANCE JUMP : %s to %s ---- resetting to %s", self.previous_distance_to_wall, distance_to_wall, self.previous_distance_to_wall)
+            if self.previous_distance_to_wall == 0 :
+                self.previous_distance_to_wall = distance_to_wall
 
-            if distance_to_wall > limit :
-                move.angular.z = -abs(pid_distance_to_wall_z)
-                rospy.logwarn("[Distance]: %s >>>>> [Prev]: %s", distance_to_wall, self.previous_distance_to_wall)
+            if not CONFIG.isclose(distance_to_wall, self.previous_distance_to_wall, 0.5) :
+                rospy.loginfo("************* DISTANCE JUMP : %s to %s ---- resetting to %s", distance_to_wall, self.previous_distance_to_wall, self.previous_distance_to_wall)
+                # distance_to_wall = self.previous_distance_to_wall
+                move.linear.x = 0
+
+                self.change_state( tasker.sweeper_states['TURNLEFT'] )
             else :
-                move.angular.z = abs(pid_distance_to_wall_z)
-                rospy.logerr("[Distance]: %s <<<<< [Prev]: %s", distance_to_wall, self.previous_distance_to_wall)
-                # self.change_state( tasker.sweeper_states['TURNLEFT'] )
 
-            self.previous_distance_to_wall = distance_to_wall
+                if distance_to_wall > limit :
+                    move.angular.z = -abs(pid_distance_to_wall_z)
+                    rospy.logwarn("[Distance]: %s >>>>> [Prev]: %s [Closeness: %s]", distance_to_wall, self.previous_distance_to_wall, CONFIG.isclose(distance_to_wall, self.previous_distance_to_wall, 0.5))
+                else :
+                    move.angular.z = abs(pid_distance_to_wall_z)
+                    rospy.logerr("[Distance]: %s <<<<< [Prev]: %s [Closeness: %s]", distance_to_wall, self.previous_distance_to_wall, CONFIG.isclose(distance_to_wall, self.previous_distance_to_wall, 0.5))
 
+                self.previous_distance_to_wall = distance_to_wall
+
+        # rospy.loginfo(move)
         return move
 
     def change_state(self, previous_state) :
