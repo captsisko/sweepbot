@@ -2,19 +2,13 @@
 <launch>
 
     <include file="$(find sweep_bot)/launch/cleaner.launch"/>
-    <!-- <include file="$(find sweep_bot)/launch/scan_merge.launch"/> -->
-    <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
-    
-    <!-- <node name="rviz" pkg="rviz" type="rviz" output="screen" args='-d $(find sweep_bot)/config/rviz/drive.rviz'/> -->
 
     <include file='$(find gazebo_ros)/launch/empty_world.launch'>
-        <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/> -->
+        <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_test.world'/>
         <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/wall_test_right.world'/> -->
-        <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_minimal_test.world'/>
+        <!-- <arg name="world_name" value='$(find sweep_bot)/worlds/small_city_minimal_test.world'/> -->
     </include>
 
-
-    <!-- <node name="map_server" pkg="map_server" type="map_server" output="screen" args="/home/sisko/city_map_hukoyu_2.yaml"/> -->
     <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find sweep_bot)/generated_maps/hukoyo_map.yaml"/>
 
     <node name="amcl" pkg="amcl" type="amcl" output="screen">
@@ -28,15 +22,9 @@
         <rosparam command="load" file="$(find sweep_bot)/config/costmaps/common.yml"/>
         <rosparam command="load" file="$(find sweep_bot)/config/costmaps/local.yml"/>
         <rosparam command="load" file="$(find sweep_bot)/config/costmaps/global.yml"/>
-        <!-- <remap from="cmd_vel" to="cmd_vel_original"/> -->
-        
-        <!-- <rosparam command="load" file="$(find sweep_bot)/params/global_costmap_params.yaml"/>
-        <rosparam command="load" file="$(find sweep_bot)/params/local_costmap_params.yaml"/> -->
     </node>
 
     <node pkg="tf" type="static_transform_publisher" name="map_chasis_transform" args="0 0 0 0 0 0 chasis_footprint map 100"/>
-
-    <!-- <include file="$(find sweep_bot)/launch/merge_laser_scans.launch"/> -->
 
     <node name="sweepbot_laser_angles" pkg="sweep_bot" type="angles.py" output="log" respawn="false" respawn_delay="0"/>
         

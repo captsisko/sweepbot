@@ -264,7 +264,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -298,7 +298,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -338,7 +338,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -372,7 +372,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -410,7 +410,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -444,7 +444,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -482,7 +482,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -516,7 +516,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -554,7 +554,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -588,7 +588,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -626,7 +626,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -660,7 +660,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -6.2</point>
           <point>-41.275528258147574 -6.3545084971874735</point>
           <point>-41.20450849718747 -6.493892626146237</point>
@@ -700,7 +700,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -734,7 +734,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -772,7 +772,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -806,7 +806,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -844,7 +844,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -878,7 +878,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 -40.8</point>
           <point>-41.275528258147574 -40.95450849718747</point>
           <point>-41.20450849718747 -41.093892626146236</point>
@@ -919,7 +919,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-21.7 -40.8</point>
           <point>-21.675528258147576 -40.95450849718747</point>
           <point>-21.604508497187474 -41.093892626146236</point>
@@ -953,7 +953,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-21.7 -40.8</point>
           <point>-21.675528258147576 -40.95450849718747</point>
           <point>-21.604508497187474 -41.093892626146236</point>
@@ -993,7 +993,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1027,7 +1027,7 @@
     <collision name="collision">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1067,7 +1067,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 38.8</point>
           <point>-41.275528258147574 38.645491502812526</point>
           <point>-41.20450849718747 38.50610737385376</point>
@@ -1101,7 +1101,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 38.8</point>
           <point>-41.275528258147574 38.645491502812526</point>
           <point>-41.20450849718747 38.50610737385376</point>
@@ -1143,7 +1143,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1177,7 +1177,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1215,7 +1215,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1249,7 +1249,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1287,7 +1287,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1321,7 +1321,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1359,7 +1359,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1393,7 +1393,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1431,7 +1431,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1465,7 +1465,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1503,7 +1503,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1537,7 +1537,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1575,7 +1575,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1609,7 +1609,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-41.3 4.2</point>
           <point>-41.275528258147574 4.045491502812527</point>
           <point>-41.20450849718747 3.9061073738537635</point>
@@ -1650,7 +1650,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-21.7 4.2</point>
           <point>-21.675528258147576 4.045491502812527</point>
           <point>-21.604508497187474 3.9061073738537635</point>
@@ -1684,7 +1684,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-21.7 4.2</point>
           <point>-21.675528258147576 4.045491502812527</point>
           <point>-21.604508497187474 3.9061073738537635</point>
@@ -1724,7 +1724,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -40.8</point>
           <point>-11.275528258147578 -40.95450849718747</point>
           <point>-11.204508497187474 -41.093892626146236</point>
@@ -1758,7 +1758,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -40.8</point>
           <point>-11.275528258147578 -40.95450849718747</point>
           <point>-11.204508497187474 -41.093892626146236</point>
@@ -1798,7 +1798,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -6.2</point>
           <point>-11.275528258147578 -6.3545084971874735</point>
           <point>-11.204508497187474 -6.493892626146237</point>
@@ -1832,7 +1832,7 @@
     <collision name="collision">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -6.2</point>
           <point>-11.275528258147578 -6.3545084971874735</point>
           <point>-11.204508497187474 -6.493892626146237</point>
@@ -1874,7 +1874,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -40.8</point>
           <point>-11.275528258147578 -40.95450849718747</point>
           <point>-11.204508497187474 -41.093892626146236</point>
@@ -1908,7 +1908,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -40.8</point>
           <point>-11.275528258147578 -40.95450849718747</point>
           <point>-11.204508497187474 -41.093892626146236</point>
@@ -1946,7 +1946,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -9.5</point>
           <point>-11.275528258147578 -9.654508497187473</point>
           <point>-11.204508497187474 -9.793892626146237</point>
@@ -1980,7 +1980,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 -9.5</point>
           <point>-11.275528258147578 -9.654508497187473</point>
           <point>-11.204508497187474 -9.793892626146237</point>
@@ -2021,7 +2021,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>38.3 -40.8</point>
           <point>38.32447174185242 -40.95450849718747</point>
           <point>38.395491502812526 -41.093892626146236</point>
@@ -2055,7 +2055,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>38.3 -40.8</point>
           <point>38.32447174185242 -40.95450849718747</point>
           <point>38.395491502812526 -41.093892626146236</point>
@@ -2095,7 +2095,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 4.2</point>
           <point>-11.275528258147578 4.045491502812527</point>
           <point>-11.204508497187474 3.9061073738537635</point>
@@ -2129,7 +2129,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 4.2</point>
           <point>-11.275528258147578 4.045491502812527</point>
           <point>-11.204508497187474 3.9061073738537635</point>
@@ -2169,7 +2169,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 38.8</point>
           <point>-11.275528258147578 38.645491502812526</point>
           <point>-11.204508497187474 38.50610737385376</point>
@@ -2203,7 +2203,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 38.8</point>
           <point>-11.275528258147578 38.645491502812526</point>
           <point>-11.204508497187474 38.50610737385376</point>
@@ -2245,7 +2245,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 4.2</point>
           <point>-11.275528258147578 4.045491502812527</point>
           <point>-11.204508497187474 3.9061073738537635</point>
@@ -2279,7 +2279,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-11.3 4.2</point>
           <point>-11.275528258147578 4.045491502812527</point>
           <point>-11.204508497187474 3.9061073738537635</point>
@@ -2320,7 +2320,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>38.3 4.2</point>
           <point>38.32447174185242 4.045491502812527</point>
           <point>38.395491502812526 3.9061073738537635</point>
@@ -2354,7 +2354,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>38.3 4.2</point>
           <point>38.32447174185242 4.045491502812527</point>
           <point>38.395491502812526 3.9061073738537635</point>
@@ -2394,7 +2394,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 -40.8</point>
           <point>48.724471741852426 -40.95450849718747</point>
           <point>48.79549150281253 -41.093892626146236</point>
@@ -2428,7 +2428,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 -40.8</point>
           <point>48.724471741852426 -40.95450849718747</point>
           <point>48.79549150281253 -41.093892626146236</point>
@@ -2468,7 +2468,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 -6.2</point>
           <point>48.724471741852426 -6.3545084971874735</point>
           <point>48.79549150281253 -6.493892626146237</point>
@@ -2502,7 +2502,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 -6.2</point>
           <point>48.724471741852426 -6.3545084971874735</point>
           <point>48.79549150281253 -6.493892626146237</point>
@@ -2540,7 +2540,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>95.0 -6.2</point>
           <point>95.02447174185242 -6.3545084971874735</point>
           <point>95.09549150281252 -6.493892626146237</point>
@@ -2574,7 +2574,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>95.0 -6.2</point>
           <point>95.02447174185242 -6.3545084971874735</point>
           <point>95.09549150281252 -6.493892626146237</point>
@@ -2616,7 +2616,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 -40.8</point>
           <point>48.724471741852426 -40.95450849718747</point>
           <point>48.79549150281253 -41.093892626146236</point>
@@ -2650,7 +2650,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 -40.8</point>
           <point>48.724471741852426 -40.95450849718747</point>
           <point>48.79549150281253 -41.093892626146236</point>
@@ -2691,7 +2691,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>103.3 -40.8</point>
           <point>103.32447174185242 -40.95450849718747</point>
           <point>103.39549150281252 -41.093892626146236</point>
@@ -2725,7 +2725,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>103.3 -40.8</point>
           <point>103.32447174185242 -40.95450849718747</point>
           <point>103.39549150281252 -41.093892626146236</point>
@@ -2765,7 +2765,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 4.2</point>
           <point>48.724471741852426 4.045491502812527</point>
           <point>48.79549150281253 3.9061073738537635</point>
@@ -2799,7 +2799,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 4.2</point>
           <point>48.724471741852426 4.045491502812527</point>
           <point>48.79549150281253 3.9061073738537635</point>
@@ -2839,7 +2839,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 38.8</point>
           <point>48.724471741852426 38.645491502812526</point>
           <point>48.79549150281253 38.50610737385376</point>
@@ -2873,7 +2873,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 38.8</point>
           <point>48.724471741852426 38.645491502812526</point>
           <point>48.79549150281253 38.50610737385376</point>
@@ -2915,7 +2915,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 4.2</point>
           <point>48.724471741852426 4.045491502812527</point>
           <point>48.79549150281253 3.9061073738537635</point>
@@ -2949,7 +2949,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>48.7 4.2</point>
           <point>48.724471741852426 4.045491502812527</point>
           <point>48.79549150281253 3.9061073738537635</point>
@@ -2990,7 +2990,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>103.3 4.2</point>
           <point>103.32447174185242 4.045491502812527</point>
           <point>103.39549150281252 3.9061073738537635</point>
@@ -3024,7 +3024,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>103.3 4.2</point>
           <point>103.32447174185242 4.045491502812527</point>
           <point>103.39549150281252 3.9061073738537635</point>
@@ -3063,7 +3063,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 -41.199999999999996</point>
           <point>113.70489434837049 -41.23090169943749</point>
           <point>113.71909830056251 -41.258778525229246</point>
@@ -3097,7 +3097,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 -41.199999999999996</point>
           <point>113.70489434837049 -41.23090169943749</point>
           <point>113.71909830056251 -41.258778525229246</point>
@@ -3135,7 +3135,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 -4.1000000000000005</point>
           <point>113.70489434837049 -4.130901699437495</point>
           <point>113.71909830056251 -4.1587785252292475</point>
@@ -3169,7 +3169,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 -4.1000000000000005</point>
           <point>113.70489434837049 -4.130901699437495</point>
           <point>113.71909830056251 -4.1587785252292475</point>
@@ -3207,7 +3207,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 -41.199999999999996</point>
           <point>113.70489434837049 -41.23090169943749</point>
           <point>113.71909830056251 -41.258778525229246</point>
@@ -3241,7 +3241,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 -41.199999999999996</point>
           <point>113.70489434837049 -41.23090169943749</point>
           <point>113.71909830056251 -41.258778525229246</point>
@@ -3279,7 +3279,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>115.8 -41.199999999999996</point>
           <point>115.80489434837048 -41.23090169943749</point>
           <point>115.8190983005625 -41.258778525229246</point>
@@ -3313,7 +3313,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>115.8 -41.199999999999996</point>
           <point>115.80489434837048 -41.23090169943749</point>
           <point>115.8190983005625 -41.258778525229246</point>
@@ -3352,7 +3352,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 3.8000000000000003</point>
           <point>113.70489434837049 3.7690983005625056</point>
           <point>113.71909830056251 3.741221474770753</point>
@@ -3386,7 +3386,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 3.8000000000000003</point>
           <point>113.70489434837049 3.7690983005625056</point>
           <point>113.71909830056251 3.741221474770753</point>
@@ -3424,7 +3424,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 40.9</point>
           <point>113.70489434837049 40.869098300562506</point>
           <point>113.71909830056251 40.84122147477075</point>
@@ -3458,7 +3458,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 40.9</point>
           <point>113.70489434837049 40.869098300562506</point>
           <point>113.71909830056251 40.84122147477075</point>
@@ -3496,7 +3496,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 3.8000000000000003</point>
           <point>113.70489434837049 3.7690983005625056</point>
           <point>113.71909830056251 3.741221474770753</point>
@@ -3530,7 +3530,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>113.7 3.8000000000000003</point>
           <point>113.70489434837049 3.7690983005625056</point>
           <point>113.71909830056251 3.741221474770753</point>
@@ -3568,7 +3568,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>115.8 3.8000000000000003</point>
           <point>115.80489434837048 3.7690983005625056</point>
           <point>115.8190983005625 3.741221474770753</point>
@@ -3602,7 +3602,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>115.8 3.8000000000000003</point>
           <point>115.80489434837048 3.7690983005625056</point>
           <point>115.8190983005625 3.741221474770753</point>
@@ -3643,7 +3643,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>123.7 -51.2</point>
           <point>123.72447174185243 -51.354508497187474</point>
           <point>123.79549150281252 -51.49389262614624</point>
@@ -3677,7 +3677,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>123.7 -51.2</point>
           <point>123.72447174185243 -51.354508497187474</point>
           <point>123.79549150281252 -51.49389262614624</point>
@@ -3715,7 +3715,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>123.7 -51.2</point>
           <point>123.72447174185243 -51.354508497187474</point>
           <point>123.79549150281252 -51.49389262614624</point>
@@ -3749,7 +3749,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>123.7 -51.2</point>
           <point>123.72447174185243 -51.354508497187474</point>
           <point>123.79549150281252 -51.49389262614624</point>
@@ -3790,7 +3790,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-51.7 -51.2</point>
           <point>-51.67552825814758 -51.354508497187474</point>
           <point>-51.604508497187474 -51.49389262614624</point>
@@ -3834,7 +3834,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-48.7 -51.2</point>
           <point>-48.67552825814758 -51.354508497187474</point>
           <point>-48.604508497187474 -51.49389262614624</point>
@@ -3868,7 +3868,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-48.7 -51.2</point>
           <point>-48.67552825814758 -51.354508497187474</point>
           <point>-48.604508497187474 -51.49389262614624</point>
@@ -3906,7 +3906,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-48.7 -51.2</point>
           <point>-48.67552825814758 -51.354508497187474</point>
           <point>-48.604508497187474 -51.49389262614624</point>
@@ -3940,7 +3940,7 @@
     <collision name='collision'>
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-48.7 -51.2</point>
           <point>-48.67552825814758 -51.354508497187474</point>
           <point>-48.604508497187474 -51.49389262614624</point>
@@ -3981,7 +3981,7 @@
     <visual name="visual">
       <geometry>
         <polyline>
-          <height>1.20</height>
+          <height>0.35</height>
           <point>-51.7 49.2</point>
           <point>-51.67552825814758 49.04549150281253</point>
           <point>-51.604508497187474 48.906107373853764</point>

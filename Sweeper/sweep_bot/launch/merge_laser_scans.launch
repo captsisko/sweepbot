@@ -17,6 +17,6 @@
         <!-- <param name="range_min" value="0.10"/> -->
     </node>
 
-    <!-- <node name='scans_spaces' pkg="sweep_bot" type='freespace.py'/> -->
+    <node name='scans_spaces' pkg="sweep_bot" type='freespace.py'/>
     <node name="sweepbot_bow_watch" pkg="sweep_bot" type="bow_watch.py" output="log" respawn="false" respawn_delay="0"/>
 </launch>
